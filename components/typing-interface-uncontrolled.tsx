@@ -7,6 +7,7 @@ import { useUncontrolledTyping } from "@/hooks/use-uncontrolled-typing"
 import { splitTextIntoLines } from "@/utils/typing-utils"
 import { TypingLine } from "@/components/typing/typing-line-uncontrolled"
 import { TypingRhythmVisualizer } from "@/components/typing/typing-rhythm-visualizer"
+import { useLanguage } from "@/contexts/language-context"
 
 // 인터페이스 확장
 interface ExtendedTypingInterfaceProps extends TypingInterfaceProps {
@@ -19,6 +20,7 @@ export default function TypingInterfaceUncontrolled({
   onPositionChange,
   initialJumpTarget = null,
 }: ExtendedTypingInterfaceProps) {
+  const { t } = useLanguage()
   // UI state
   const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
   const [showRhythm, setShowRhythm] = useState<boolean>(false)
@@ -416,45 +418,45 @@ export default function TypingInterfaceUncontrolled({
               {/* 기본 통계 정보 */}
               <div className="grid grid-cols-4 gap-4 mb-4">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">진행률</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("common.progress")}</p>
                   <p className="text-lg font-light">
                     {Math.round(totalProgress)}
                     <span className="text-xs text-muted-foreground ml-1">%</span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">타수</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("common.typingSpeed")}</p>
                   <p className="text-lg font-light">
                     {typing.stats.cpm}
-                    <span className="text-xs text-muted-foreground ml-1">타/분</span>
+                    <span className="text-xs text-muted-foreground ml-1">{t("common.strokesPerMinute")}</span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">정확도</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("common.accuracy")}</p>
                   <p className="text-lg font-light">
                     {typing.stats.accuracy}
                     <span className="text-xs text-muted-foreground ml-1">%</span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">시간</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("common.time")}</p>
                   <p className="text-lg font-light">
                     {typing.startTime ? Math.round((Date.now() - typing.startTime) / 1000) : 0}
-                    <span className="text-xs text-muted-foreground ml-1">초</span>
+                    <span className="text-xs text-muted-foreground ml-1">{t("common.seconds")}</span>
                   </p>
                 </div>
               </div>
 
               {/* 키보드 단축키 정보 */}
               <div className="mb-4 p-3 bg-background/80 rounded-md border border-border/10">
-                <h3 className="text-xs font-medium mb-2 text-muted-foreground">키보드 단축키</h3>
+                <h3 className="text-xs font-medium mb-2 text-muted-foreground">{t("common.keyboardShortcuts")}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">다음 줄</span>
+                    <span className="text-muted-foreground">{t("common.nextLine")}</span>
                     <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Tab</kbd>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">이전 줄</span>
+                    <span className="text-muted-foreground">{t("common.previousLine")}</span>
                     <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Shift+Tab</kbd>
                   </div>
                   <div className="flex justify-between items-center">
@@ -467,10 +469,10 @@ export default function TypingInterfaceUncontrolled({
               {/* 추가 통계 정보 */}
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">순 타수</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("common.netTypingSpeed")}</p>
                   <p className="text-lg font-light">
                     {typing.stats.netCpm}
-                    <span className="text-xs text-muted-foreground ml-1">타/분</span>
+                    <span className="text-xs text-muted-foreground ml-1">{t("common.strokesPerMinute")}</span>
                   </p>
                 </div>
                 <div>

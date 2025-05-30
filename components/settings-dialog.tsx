@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { useTypingSettings } from "@/contexts/typing-settings-context"
 import { useTypingSound } from "@/hooks/use-typing-sound"
+import { useLanguage } from "@/contexts/language-context"
 import { Volume2, Keyboard } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
@@ -16,6 +17,7 @@ interface SettingsDialogProps {
 }
 
 export default function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+  const { t } = useLanguage()
   const { settings, updateSettings, resetSettings } = useTypingSettings()
   const { testSounds, getAvailableSoundThemes } = useTypingSound()
 
@@ -26,12 +28,12 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle>설정</DialogTitle>
+          <DialogTitle>{t("common.settings")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
           <div className="space-y-2">
-            <Label htmlFor="font-size">글꼴 크기: {settings.fontSize}px</Label>
+            <Label htmlFor="font-size">{t("common.fontSize")}: {settings.fontSize}px</Label>
             <Slider
               id="font-size"
               min={12}
@@ -43,38 +45,38 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="font-family">글꼴</Label>
+            <Label htmlFor="font-family">{t("common.font")}</Label>
             <Select value={settings.fontFamily} onValueChange={(value) => updateSettings({ fontFamily: value })}>
               <SelectTrigger id="font-family">
-                <SelectValue placeholder="글꼴 선택" />
+                <SelectValue placeholder={t("common.selectFont")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="mono">고정폭 (Monospace)</SelectItem>
-                <SelectItem value="sans">Sans-serif</SelectItem>
-                <SelectItem value="serif">Serif</SelectItem>
+                <SelectItem value="mono">{t("common.fontMonospace")}</SelectItem>
+                <SelectItem value="sans">{t("common.fontSansSerif")}</SelectItem>
+                <SelectItem value="serif">{t("common.fontSerif")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="theme">테마</Label>
+            <Label htmlFor="theme">{t("common.theme")}</Label>
             <Select
               value={settings.theme}
               onValueChange={(value: "light" | "dark" | "system") => updateSettings({ theme: value })}
             >
               <SelectTrigger id="theme">
-                <SelectValue placeholder="테마 선택" />
+                <SelectValue placeholder={t("common.themeSelect")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="light">라이트 모드</SelectItem>
-                <SelectItem value="dark">다크 모드</SelectItem>
-                <SelectItem value="system">시스템 설정</SelectItem>
+                <SelectItem value="light">{t("common.lightMode")}</SelectItem>
+                <SelectItem value="dark">{t("common.darkMode")}</SelectItem>
+                <SelectItem value="system">{t("common.systemSettings")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="show-wpm">WPM 표시</Label>
+            <Label htmlFor="show-wpm">{t("common.showWpm")}</Label>
             <Switch
               id="show-wpm"
               checked={settings.showWpm}
@@ -86,11 +88,11 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
           <div className="space-y-4 border-t pt-4">
             <h3 className="text-sm font-medium flex items-center gap-2">
               <Volume2 className="h-4 w-4" />
-              소리 설정
+              {t("common.soundSettings")}
             </h3>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="sound-enabled">타이핑 소리</Label>
+              <Label htmlFor="sound-enabled">{t("common.typingSound")}</Label>
               <Switch
                 id="sound-enabled"
                 checked={settings.soundEnabled}
@@ -104,7 +106,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="sound-volume" className="text-sm">
-                      볼륨: {settings.soundVolume}%
+                      {t("common.volume")}: {settings.soundVolume}%
                     </Label>
                   </div>
                   <Slider
@@ -119,7 +121,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
 
                 {/* 소리 테마 선택 */}
                 <div className="space-y-2">
-                  <Label className="text-sm">소리 테마</Label>
+                  <Label className="text-sm">{t("common.soundTheme")}</Label>
                   <RadioGroup
                     value={settings.soundTheme || "default"}
                     onValueChange={(value) => updateSettings({ soundTheme: value as any })}
@@ -140,14 +142,14 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
                 </div>
 
                 <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => testSounds()}>
-                  소리 테스트
+                  {t("common.testSound")}
                 </Button>
               </div>
             )}
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="ignore-symbols">기호 무시</Label>
+            <Label htmlFor="ignore-symbols">{t("common.ignoreSymbols")}</Label>
             <Switch
               id="ignore-symbols"
               checked={settings.ignoreSymbols}
@@ -156,7 +158,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="auto-advance">자동 줄 이동</Label>
+            <Label htmlFor="auto-advance">{t("common.autoAdvance")}</Label>
             <Switch
               id="auto-advance"
               checked={settings.autoAdvance}
@@ -167,27 +169,27 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
           <div className="pt-4 border-t border-gray-100">
             <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
               <Keyboard className="h-4 w-4" />
-              키보드 단축키
+              {t("common.keyboardShortcuts")}
             </h3>
             <div className="text-sm text-gray-500 space-y-1">
               <div className="flex justify-between">
-                <span>저장</span>
+                <span>{t("common.saveShortcut")}</span>
                 <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Ctrl + S</kbd>
               </div>
               <div className="flex justify-between">
-                <span>목차</span>
+                <span>{t("common.tableOfContents")}</span>
                 <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Ctrl + T</kbd>
               </div>
               <div className="flex justify-between">
-                <span>설정</span>
+                <span>{t("common.settingsShortcut")}</span>
                 <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Ctrl + ,</kbd>
               </div>
               <div className="flex justify-between">
-                <span>다음 줄</span>
+                <span>{t("common.nextLine")}</span>
                 <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Tab</kbd>
               </div>
               <div className="flex justify-between">
-                <span>이전 줄</span>
+                <span>{t("common.previousLine")}</span>
                 <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Shift + Tab</kbd>
               </div>
             </div>
@@ -195,7 +197,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
 
           <div className="flex justify-end">
             <Button variant="outline" size="sm" onClick={resetSettings}>
-              기본값으로 재설정
+              {t("common.resetToDefaults")}
             </Button>
           </div>
         </div>

@@ -12,6 +12,7 @@ import { findNextChapter, findPrevChapter } from "@/utils/chapter-utils"
 import { toast } from "@/hooks/use-toast"
 import { useTypingSound } from "@/hooks/use-typing-sound"
 import { useTypingSettings } from "@/contexts/typing-settings-context"
+import { useLanguage } from "@/contexts/language-context"
 
 interface ChapterBasedTypingInterfaceProps {
   chapter: ChapterInfo
@@ -26,6 +27,7 @@ export default function ChapterBasedTypingInterface({
   onNavigateToChapter,
   allChapters,
 }: ChapterBasedTypingInterfaceProps) {
+  const { t } = useLanguage()
   // UI state
   const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
   const [fixedWidth, setFixedWidth] = useState<number>(1200) // 기본 고정 너비
@@ -63,7 +65,7 @@ export default function ChapterBasedTypingInterface({
     // 챕터 내용이 없으면 처리하지 않음
     if (!chapter || !chapter.content) {
       console.warn("챕터 내용이 없습니다:", chapter)
-      setProcessingError("챕터 내용이 없습니다. 다른 챕터를 선택하거나 텍스트를 다시 불러오세요.")
+      setProcessingError(t("common.noChapterContent"))
       return
     }
 
@@ -118,9 +120,9 @@ export default function ChapterBasedTypingInterface({
         // 초기화 완료 표시
         setIsInitialized(true)
       } catch (error) {
-        console.error("텍스트 처리 오류:", error)
+        console.error(`${t("common.textProcessingError")}:`, error)
         setProcessingError(
-          `텍스트 처리 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`,
+          `${t("common.textProcessingErrorOccurred")}: ${error instanceof Error ? error.message : String(error)}`,
         )
       } finally {
         setIsProcessingText(false)
@@ -148,8 +150,8 @@ export default function ChapterBasedTypingInterface({
 
       // 토스트 메시지로 알림
       toast({
-        title: "챕터 완료",
-        description: `"${chapter.title}" 챕터를 완료했습니다.`,
+        title: t("common.chapterComplete"),
+        description: t("common.chapterCompleteDesc").replace("{chapter}", chapter.title),
       })
     }
   }, [typing.isCompleted, isInitialized, chapter.id, chapter.title, onChapterComplete])
@@ -167,8 +169,8 @@ export default function ChapterBasedTypingInterface({
       }, 100)
     } else {
       toast({
-        title: "마지막 챕터",
-        description: "이미 마지막 챕터입니다.",
+        title: t("common.lastChapter"),
+        description: t("common.alreadyLastChapter"),
       })
     }
   }, [chapter.id, allChapters, onNavigateToChapter, typing])
@@ -180,8 +182,8 @@ export default function ChapterBasedTypingInterface({
       onNavigateToChapter(prevChapter.id)
     } else {
       toast({
-        title: "첫 번째 챕터",
-        description: "이미 첫 번째 챕터입니다.",
+        title: t("common.firstChapter"),
+        description: t("common.alreadyFirstChapter"),
       })
     }
   }, [chapter.id, allChapters, onNavigateToChapter])
@@ -247,7 +249,7 @@ export default function ChapterBasedTypingInterface({
               onClick={navigateToPrevChapter}
               className="text-muted-foreground hover:text-foreground"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" /> 이전 챕터
+              <ChevronLeft className="h-4 w-4 mr-1" /> {t("common.previousChapter")}
             </Button>
 
             <h2 className="text-base font-light">{chapter.title}</h2>
@@ -258,7 +260,7 @@ export default function ChapterBasedTypingInterface({
               onClick={navigateToNextChapter}
               className="text-muted-foreground hover:text-foreground"
             >
-              다음 챕터 <ChevronRight className="h-4 w-4 ml-1" />
+              {t("common.nextChapter")} <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>
@@ -309,7 +311,7 @@ export default function ChapterBasedTypingInterface({
                     />
                   </svg>
                 </div>
-                <p className="text-red-500 font-medium mb-2">오류 발생</p>
+                <p className="text-red-500 font-medium mb-2">{t("common.errorOccurred")}</p>
                 <p className="text-muted-foreground text-sm mb-4">{processingError}</p>
                 <div className="flex justify-center space-x-4">
                   <Button
@@ -404,25 +406,25 @@ export default function ChapterBasedTypingInterface({
                 <div className="flex justify-between items-center px-2 py-1 bg-accent/10 rounded-md">
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center">
-                      <span className="text-xs font-medium text-foreground/80">진행률</span>
+                      <span className="text-xs font-medium text-foreground/80">{t("common.progress")}</span>
                       <span className="ml-2 text-sm font-medium">{Math.round(chapterProgress)}%</span>
                     </div>
                     <div className="h-4 border-r border-border/30"></div>
                     <div className="flex items-center">
-                      <span className="text-xs font-medium text-foreground/80">타수</span>
+                      <span className="text-xs font-medium text-foreground/80">{t("common.typingSpeed")}</span>
                       <span className="ml-2 text-sm font-medium">{typing.stats.cpm}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center">
-                      <span className="text-xs font-medium text-foreground/80">정확도</span>
+                      <span className="text-xs font-medium text-foreground/80">{t("common.accuracy")}</span>
                       <span className="ml-2 text-sm font-medium">{typing.stats.accuracy}%</span>
                     </div>
                     <div className="h-4 border-r border-border/30"></div>
                     <div className="flex items-center">
-                      <span className="text-xs font-medium text-foreground/80">시간</span>
+                      <span className="text-xs font-medium text-foreground/80">{t("common.time")}</span>
                       <span className="ml-2 text-sm font-medium">
-                        {typing.startTime ? Math.round((Date.now() - typing.startTime) / 1000) : 0}초
+                        {typing.startTime ? Math.round((Date.now() - typing.startTime) / 1000) : 0}{t("common.seconds")}
                       </span>
                     </div>
                     {/* 소리 토글 버튼 추가 */}
@@ -431,7 +433,7 @@ export default function ChapterBasedTypingInterface({
                       size="sm"
                       onClick={toggleSound}
                       className="p-0 h-6 w-6 rounded-full"
-                      title={settings.soundEnabled ? "소리 끄기" : "소리 켜기"}
+                      title={settings.soundEnabled ? t("common.soundOff") : t("common.soundOn")}
                     >
                       {settings.soundEnabled ? (
                         <Volume2 className="h-4 w-4 text-foreground/80" />
@@ -446,22 +448,22 @@ export default function ChapterBasedTypingInterface({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* 키보드 단축키 정보 - 더 컴팩트하게 */}
                   <div className="p-3 bg-background/80 rounded-md border border-border/20">
-                    <h3 className="text-xs font-medium mb-2 text-foreground/80">키보드 단축키</h3>
+                    <h3 className="text-xs font-medium mb-2 text-foreground/80">{t("common.keyboardShortcuts")}</h3>
                     <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">다음 줄</span>
+                        <span className="text-muted-foreground">{t("common.nextLine")}</span>
                         <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Tab</kbd>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">이전 줄</span>
+                        <span className="text-muted-foreground">{t("common.previousLine")}</span>
                         <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Shift+Tab</kbd>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">다음 챕터</span>
+                        <span className="text-muted-foreground">{t("common.keyboardShortcutNextChapter")}</span>
                         <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">{modifierKey}+Alt+→</kbd>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">이전 챕터</span>
+                        <span className="text-muted-foreground">{t("common.keyboardShortcutPrevChapter")}</span>
                         <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">{modifierKey}+Alt+←</kbd>
                       </div>
                     </div>
@@ -469,11 +471,11 @@ export default function ChapterBasedTypingInterface({
 
                   {/* 상세 통계 정보 - 더 구조화된 형태로 */}
                   <div className="p-3 bg-background/80 rounded-md border border-border/20">
-                    <h3 className="text-xs font-medium mb-2 text-foreground/80">상세 통계</h3>
+                    <h3 className="text-xs font-medium mb-2 text-foreground/80">{t("common.detailedStats")}</h3>
                     <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                       <div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">순 타수</span>
+                          <span className="text-xs text-muted-foreground">{t("common.netTypingSpeed")}</span>
                           <span className="text-xs font-medium">{typing.stats.netCpm}</span>
                         </div>
                         <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden">
@@ -485,7 +487,7 @@ export default function ChapterBasedTypingInterface({
                       </div>
                       <div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">오류</span>
+                          <span className="text-xs text-muted-foreground">{t("common.errors")}</span>
                           <span className="text-xs font-medium">{typing.stats.errorCount}</span>
                         </div>
                         <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden">
@@ -497,7 +499,7 @@ export default function ChapterBasedTypingInterface({
                       </div>
                       <div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">수정</span>
+                          <span className="text-xs text-muted-foreground">{t("common.corrections")}</span>
                           <span className="text-xs font-medium">{typing.stats.correctionCount}</span>
                         </div>
                         <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden">
@@ -509,7 +511,7 @@ export default function ChapterBasedTypingInterface({
                       </div>
                       <div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">총 타수</span>
+                          <span className="text-xs text-muted-foreground">{t("common.totalKeystrokes")}</span>
                           <span className="text-xs font-medium">{typing.stats.keyPressCount}</span>
                         </div>
                         <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden">
@@ -529,7 +531,7 @@ export default function ChapterBasedTypingInterface({
           {/* Completion message */}
           {typing.isCompleted && (
             <div className="text-center mt-16 mb-16 animate-fade-in">
-              <p className="text-lg font-light mb-6 text-muted-foreground">챕터를 완료했습니다</p>
+              <p className="text-lg font-light mb-6 text-muted-foreground">{t("common.chapterCompleted")}</p>
               <div className="flex justify-center space-x-4">
                 <Button
                   onClick={typing.reset}
@@ -537,7 +539,7 @@ export default function ChapterBasedTypingInterface({
                   className="rounded-md border-border hover:bg-accent transition-colors"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  다시 연습하기
+                  {t("common.practiceAgain")}
                 </Button>
                 <Button
                   onClick={() => {

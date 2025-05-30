@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid"
 /**
  * 전체 텍스트를 목차 기반으로 분할하는 함수
  */
-export function splitTextByChapters(text: string, chapters: ChapterInfo[]): ChapterInfo[] {
+export function splitTextByChapters(text: string, chapters: ChapterInfo[], fullTextLabel: string = "전체 텍스트"): ChapterInfo[] {
   if (!text || !chapters || !chapters.length) {
     console.warn("splitTextByChapters: 텍스트 또는 챕터가 없습니다.")
 
@@ -13,7 +13,7 @@ export function splitTextByChapters(text: string, chapters: ChapterInfo[]): Chap
     if (text && (!chapters || chapters.length === 0)) {
       const defaultChapter: ChapterInfo = {
         id: "default",
-        title: "전체 텍스트",
+        title: fullTextLabel,
         position: 0,
         level: 1,
         content: text,
@@ -101,7 +101,7 @@ export function splitTextByChapters(text: string, chapters: ChapterInfo[]): Chap
     const processedChapters = JSON.parse(JSON.stringify(chapters))
 
     // 평탄화된 목록의 정보를 원본 계층 구조에 반영
-    function updateChapterInfo(items: ChapterInfo[]) {
+    const updateChapterInfo = (items: ChapterInfo[]): void => {
       for (const item of items) {
         const flatItem = flatChapters.find((c) => c.id === item.id)
         if (flatItem) {
@@ -129,7 +129,7 @@ export function splitTextByChapters(text: string, chapters: ChapterInfo[]): Chap
       if (processedChapters.length === 0) {
         const defaultChapter: ChapterInfo = {
           id: uuidv4(),
-          title: "전체 텍스트",
+          title: fullTextLabel,
           position: 0,
           level: 1,
           content: text,
@@ -145,7 +145,7 @@ export function splitTextByChapters(text: string, chapters: ChapterInfo[]): Chap
     // 오류 발생 시 기본 챕터 생성
     const defaultChapter: ChapterInfo = {
       id: uuidv4(),
-      title: "전체 텍스트",
+      title: fullTextLabel,
       position: 0,
       level: 1,
       content: text,

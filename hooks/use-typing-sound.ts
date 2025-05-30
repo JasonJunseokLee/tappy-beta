@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useTypingSettings } from "@/contexts/typing-settings-context"
+import { useLanguage } from "@/contexts/language-context"
 
 // 소리 종류 정의
 const SOUND_TYPES = {
@@ -515,6 +516,7 @@ const SOUND_THEMES = {
 
 export function useTypingSound() {
   const { settings } = useTypingSettings()
+  const { t } = useLanguage()
   const [isLoaded, setIsLoaded] = useState(false)
   const audioContextRef = useRef<AudioContext | null>(null)
   const lastPlayedTimeRef = useRef<Record<string, number>>({})
@@ -624,12 +626,34 @@ export function useTypingSound() {
 
   // 사용 가능한 소리 테마 목록 반환
   const getAvailableSoundThemes = useCallback(() => {
-    return Object.entries(SOUND_THEMES).map(([id, theme]) => ({
-      id,
-      name: theme.name,
-      description: theme.description,
-    }))
-  }, [])
+    return [
+      {
+        id: "default",
+        name: t("common.soundThemeDefault"),
+        description: t("common.soundThemeDefaultDesc")
+      },
+      {
+        id: "mechanical",
+        name: t("common.soundThemeMechanical"),
+        description: t("common.soundThemeMechanicalDesc")
+      },
+      {
+        id: "membrane",
+        name: t("common.soundThemeMembrane"),
+        description: t("common.soundThemeMembraneDesc")
+      },
+      {
+        id: "typewriter",
+        name: t("common.soundThemeTypewriter"),
+        description: t("common.soundThemeTypewriterDesc")
+      },
+      {
+        id: "soft",
+        name: t("common.soundThemeSoft"),
+        description: t("common.soundThemeSoftDesc")
+      }
+    ]
+  }, [t])
 
   return {
     playKeySound,

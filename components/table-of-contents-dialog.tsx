@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChevronRight, ChevronDown, Search, AlertCircle, CheckCircle2, RefreshCw, FileText, Save } from "lucide-react"
+import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect, useRef } from "react"
 import type { ChapterInfo } from "@/types/typing"
 import { Input } from "@/components/ui/input"
@@ -38,6 +39,7 @@ export default function TableOfContentsDialog({
   onSaveSession,
   isRecalculatingToc,
 }: TableOfContentsDialogProps) {
+  const { t } = useLanguage()
   const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({})
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [filteredChapters, setFilteredChapters] = useState<ChapterInfo[]>([])
@@ -213,14 +215,14 @@ export default function TableOfContentsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>목차</DialogTitle>
+          <DialogTitle>{t("common.tableOfContents")}</DialogTitle>
         </DialogHeader>
 
         {invalidPositions && (
           <Alert variant="destructive" className="mb-4 py-2">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              일부 목차 항목의 위치 정보가 유효하지 않습니다. 텍스트를 다시 불러오거나 목차를 재생성하세요.
+              {t("common.invalidTocPositions")}
             </AlertDescription>
           </Alert>
         )}
@@ -228,7 +230,7 @@ export default function TableOfContentsDialog({
         <div className="relative mb-4">
           <Input
             ref={searchInputRef}
-            placeholder="목차 검색..."
+            placeholder={t("common.searchToc")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pr-8"
@@ -247,7 +249,7 @@ export default function TableOfContentsDialog({
             </div>
           </ScrollArea>
         ) : (
-          <div className="py-4 text-center text-muted-foreground">이 문서에서 목차를 찾을 수 없습니다.</div>
+          <div className="py-4 text-center text-muted-foreground">{t("common.noTocFound")}</div>
         )}
 
         {/* 완료 상태 표시 */}
@@ -281,14 +283,14 @@ export default function TableOfContentsDialog({
                 className="text-xs"
               >
                 <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isRecalculatingToc ? "animate-spin" : ""}`} />
-                목차 재계산
+                {t("common.recalculateToc")}
               </Button>
             )}
 
             {onFormatText && (
               <Button variant="outline" size="sm" onClick={onFormatText} className="text-xs">
                 <FileText className="h-3.5 w-3.5 mr-1" />
-                텍스트 포맷팅
+                {t("common.textFormatting")}
               </Button>
             )}
           </div>
@@ -296,7 +298,7 @@ export default function TableOfContentsDialog({
           {onSaveSession && (
             <Button variant="outline" size="sm" onClick={onSaveSession} className="text-xs">
               <Save className="h-3.5 w-3.5 mr-1" />
-              저장
+              {t("common.save")}
             </Button>
           )}
         </div>

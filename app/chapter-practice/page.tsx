@@ -8,6 +8,7 @@ import TextImportDialog from "@/components/text-import-dialog"
 import TableOfContentsDialog from "@/components/table-of-contents-dialog"
 import SettingsDialog from "@/components/settings-dialog"
 import { useMobile } from "@/hooks/use-mobile"
+import { useLanguage } from "@/contexts/language-context"
 import { validateAndFixChapterPositions, recalculateChapterPositions } from "@/utils/toc-utils"
 import { toast } from "@/hooks/use-toast"
 import { formatTextWithHeadings } from "@/utils/text-formatter"
@@ -25,6 +26,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 export default function ChapterPracticePage() {
   const router = useRouter()
   const isMobile = useMobile()
+  const { t } = useLanguage()
   const [text, setText] = useState<string>("")
   const [title, setTitle] = useState<string>("")
   const [showTextImport, setShowTextImport] = useState<boolean>(false)
@@ -138,7 +140,7 @@ export default function ChapterPracticePage() {
       const validatedChapters = validateAndFixChapterPositions(importedChapters, formattedText)
 
       // 목차 기반으로 텍스트 분할
-      const chaptersWithContent = splitTextByChapters(formattedText, validatedChapters)
+      const chaptersWithContent = splitTextByChapters(formattedText, validatedChapters, t("common.fullText"))
 
       // 상태 초기화
       setText(formattedText)
@@ -181,7 +183,7 @@ export default function ChapterPracticePage() {
       const extractedChapters = recalculateChapterPositions([], formattedText)
 
       // 목차 기반으로 텍스트 분할
-      const chaptersWithContent = splitTextByChapters(formattedText, extractedChapters)
+      const chaptersWithContent = splitTextByChapters(formattedText, extractedChapters, t("common.fullText"))
 
       // 상태 초기화
       setText(formattedText)
@@ -292,13 +294,13 @@ export default function ChapterPracticePage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => router.push("/")}
-                aria-label="Home"
+                aria-label={t("common.home")}
                 className="rounded-full h-9 w-9"
               >
                 <Home className="h-5 w-5" />
               </Button>
               <h1 className="text-xl font-light tracking-tight truncate max-w-[200px] md:max-w-md">
-                {title || "제목 없음"}
+                {title || t("common.untitled")}
               </h1>
             </div>
 
@@ -310,8 +312,8 @@ export default function ChapterPracticePage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowTextImport(true)}
-                  aria-label="텍스트"
-                  title="텍스트 가져오기"
+                  aria-label={t("common.text")}
+                  title={t("practice.importText")}
                   className="rounded-full h-9 w-9"
                 >
                   <BookOpen className="h-5 w-5" />
@@ -322,8 +324,8 @@ export default function ChapterPracticePage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setShowToc(true)}
-                    aria-label="목차"
-                    title="목차"
+                    aria-label={t("practice.tableOfContents")}
+                    title={t("practice.tableOfContents")}
                     className="rounded-full h-9 w-9"
                   >
                     <List className="h-5 w-5" />
@@ -335,8 +337,8 @@ export default function ChapterPracticePage() {
                     variant="ghost"
                     size="icon"
                     onClick={saveSession}
-                    aria-label="저장"
-                    title="저장"
+                    aria-label={t("common.save")}
+                    title={t("common.save")}
                     className="rounded-full h-9 w-9"
                   >
                     <Save className="h-5 w-5" />
@@ -347,8 +349,8 @@ export default function ChapterPracticePage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSettings(true)}
-                  aria-label="설정"
-                  title="설정"
+                  aria-label={t("common.settings")}
+                  title={t("common.settings")}
                   className="rounded-full h-9 w-9"
                 >
                   <Settings className="h-5 w-5" />
@@ -400,16 +402,16 @@ export default function ChapterPracticePage() {
               <div className="h-16 w-16 mx-auto border border-border rounded-full flex items-center justify-center bg-background/80">
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="text-2xl font-light tracking-tight">텍스트를 선택하세요</h2>
+              <h2 className="text-2xl font-light tracking-tight">{t("common.selectTextHeading")}</h2>
               <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                샘플 텍스트를 선택하거나 직접 텍스트를 가져와 타이핑 연습을 시작하세요.
+                {t("common.selectTextDescription")}
               </p>
               <div className="pt-4">
                 <Button
                   onClick={() => setShowTextImport(true)}
                   className="rounded-full px-8 py-6 bg-foreground text-background hover:bg-foreground/90 shadow-md hover:shadow-lg transition-all duration-300"
                 >
-                  시작하기
+                  {t("common.start")}
                 </Button>
               </div>
             </div>

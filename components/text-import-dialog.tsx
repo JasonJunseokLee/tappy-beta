@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
+import { useLanguage } from "@/contexts/language-context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,67 +17,83 @@ import { formatTextWithHeadings } from "@/utils/text-formatter"
 interface TextImportDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onImport: (text: string, title: string, chapters: { title: string; position: number }[]) => void
+  onImport: (text: string, title: string, chapters: { title: string; position: number; level: number; id: string }[]) => void
   onSelectSample: (text: string, title: string) => void
 }
 
-// 샘플 텍스트 데이터 - 한국 시
-const sampleTexts = {
-  poems: [
-    {
-      title: "진달래꽃",
-      author: "김소월",
-      text: "나 보기가 역겨워\n가실 때에는\n말없이 고이 보내 드리우리다\n\n영변에 약산\n진달래꽃\n아름 따다 가실 길에 뿌리우리다\n\n가시는 걸음 걸음\n놓인 그 꽃을\n사뿐히 즈려밟고 가시옵소서\n\n나 보기가 역겨워\n가실 때에는\n죽어도 아니 눈물 흘리우리다",
-    },
-    {
-      title: "서시",
-      author: "윤동주",
-      text: "죽는 날까지 하늘을 우러러\n한 점 부끄럼이 없기를,\n잎새에 이는 바람에도\n나는 괴로워했다.\n별을 노래하는 마음으로\n모든 죽어 가는 것을 사랑해야지\n그리고 나한테 주어진 길을\n걸어가야겠다.\n\n오늘 밤에도 별이 바람에 스치운다.",
-    },
-    {
-      title: "그 꽃",
-      author: "고은",
-      text: "내려갈 때 보았네\n올라갈 때 보지 못한\n그 꽃",
-    },
-    {
-      title: "청포도",
-      author: "이육사",
-      text: "내 고장 칠월은\n청포도가 익어 가는 시절.\n\n이 마을 전설이 주저리주저리 열리고\n먼 데 하늘이 꿈꾸며 알알이 들어와 박혀.\n\n하늘 밑 푸른 바다가 가슴을 열고\n흰 돛단배가 곱게 밀려서 오면\n\n내가 바라는 손님은 고달픈 몸으로\n청포(靑袍)를 입고 찾아온다고 했으니,\n\n내 그를 맞아 이 포도를 따 먹으면\n두 손은 함뿍 적셔도 좋으련\n\n아이야 우리 식탁엔 은쟁반에\n하이얀 모시 수건을 마련해 두렴.",
-    },
-    {
-      title: "풀꽃",
-      author: "나태주",
-      text: "자세히 보아야 예쁘다\n오래 보아야 사랑스럽다\n너도 그렇다",
-    },
-    {
-      title: "독을 차고",
-      author: "김영랑",
-      text: "나의 마음은 고요한 물결\n바람 한 점 불지 않아도\n소란스러운 파도가 이는 까닭은\n\n그것은 눈에 보이지 않는\n물속 깊은 곳에서\n무엇이 움직이는 까닭이다\n\n나의 마음은 고요한 바다\n나는 그 바다 밑을 헤엄쳐 다니는\n흉칙한 물고기",
-    },
-    {
-      title: "님의 침묵",
-      author: "한용운",
-      text: "님은 갔습니다. 아아, 사랑하는 나의 님은 갔습니다.\n푸른 산빛을 깨치고 단풍나무 숲을 향하여 난 작은 길을 걸어서, 차마 떨치고 갔습니다.\n황금의 꽃같이 굳고 빛나던 옛 맹세는 차디찬 티끌이 되어서 한숨의 미풍에 날아갔습니다.\n날카로운 첫키스의 추억은 나의 운명의 지침을 돌려놓고, 뒷걸음쳐서 사라졌습니다.\n\n나는 향기로운 님의 말소리에 귀먹고, 꽃다운 님의 얼굴에 눈멀었습니다.\n사랑도 사람의 일이라 만날 때에 미리 떠날 것을 염려하고 경계하지 아니한 것은 아니지만,\n이별은 뜻밖의 일이 되고, 놀란 가슴은 새로운 슬픔에 터집니다.\n\n그러나 이별을 쓸데없는 눈물의 원천을 만들고 마는 것은 스스로 사랑을 깨치는 것인 줄 아는 까닭에,\n걷잡을 수 없는 슬픔의 힘을 옮겨서 새 희망의 정수박이에 들어부었습니다.\n\n우리는 만날 때에 떠날 것을 염려하는 것과 같이 떠날 때에 다시 만날 것을 믿습니다.\n아아, 님은 갔지마는 나는 님을 보내지 아니하였습니다.\n제 곡조를 못 이기는 사랑의 노래는 님의 침묵을 휩싸고 돕니다.",
-    },
-    {
-      title: "나그네",
-      author: "박목월",
-      text: "강나루 건너서\n밀밭 길을\n\n구름에 달 가듯이\n가는 나그네\n\n길은 외줄기\n남도 삼백리\n\n술 익는 마을마다\n타는 저녁놀\n\n구름에 달 가듯이\n가는 나그네",
-    },
-    {
-      title: "나와 나타샤와 흰 당나귀",
-      author: "백석",
-      text: "눈은 내리고\n나는 흰 당나귀 타고\n\n흰 당나귀는\n그대가 타고\n\n눈길을 걷는다\n\n눈은 내리고\n\n흰 당나귀 타고 그대가 가는 곳\n\n동백꽃 피는 숲으로 가는 바닷길\n\n흰 당나귀 타고 가는 나와 그대는\n\n눈 속에서 만난 연인이 되고\n\n당나귀를 타고 산을 오르는 것은\n\n당나귀가 길을 알고 있는 까닭이다\n\n그대가 웃는 모습은\n\n눈이 와서 참 좋다",
-    },
-    {
-      title: "봄길",
-      author: "정호승",
-      text: "길이 끝나는 곳에서도\n길이 있다\n길이 끝나는 곳에서도\n길이 되는 사람이 있다\n\n스스로 봄길이 되어\n끝없이 걸어가는 사람이 있다\n\n강물은 흐르다가 바다에 이르러 멈추지만\n바다 그 너머 하늘 가에 닿아\n다시 비가 되어 내리고\n\n비는 내리다가 그치지만\n다시 땅속에 스며 샘물이 되어 솟는다\n\n사랑도 강물처럼 흐르고 비처럼 내리는 것이다\n\n길이 끝나는 곳에서도\n길이 되는 사람이 있다\n\n스스로 봄길이 되어\n끝없이 걸어가는 사람이 있다",
-    },
-  ],
-}
-
-export default function TextImportDialog({ open, onOpenChange, onImport, onSelectSample }: TextImportDialogProps) {
+export default function TextImportDialog({
+  open,
+  onOpenChange,
+  onImport,
+  onSelectSample,
+}: TextImportDialogProps) {
+  const { t, language } = useLanguage()
+  
+  // 샘플 텍스트 데이터 - 번역 키 사용
+  const sampleTexts = {
+    poems: [
+      {
+        id: "azaleas",
+        title: t("practice.poem.azaleas.title"),
+        author: t("practice.poem.azaleas.author"),
+        text: t("practice.poem.azaleas.text"),
+      },
+      {
+        id: "foreword",
+        title: t("practice.poem.foreword.title"),
+        author: t("practice.poem.foreword.author"),
+        text: t("practice.poem.foreword.text"),
+      },
+      {
+        id: "thatFlower",
+        title: t("practice.poem.thatFlower.title"),
+        author: t("practice.poem.thatFlower.author"),
+        text: t("practice.poem.thatFlower.text"),
+      },
+      {
+        id: "greenGrapes",
+        title: t("practice.poem.greenGrapes.title"),
+        author: t("practice.poem.greenGrapes.author"),
+        text: t("practice.poem.greenGrapes.text"),
+      },
+      {
+        id: "wildflower",
+        title: t("practice.poem.wildflower.title"),
+        author: t("practice.poem.wildflower.author"),
+        text: t("practice.poem.wildflower.text"),
+      },
+      {
+        id: "독을차고",
+        title: t("practice.poem.독을 차고.title"),
+        author: t("practice.poem.독을 차고.author"),
+        text: t("practice.poem.독을 차고.text"),
+      },
+      {
+        id: "님의침묵",
+        title: t("practice.poem.님의 침묵.title"),
+        author: t("practice.poem.님의 침묵.author"),
+        text: t("practice.poem.님의 침묵.text"),
+      },
+      {
+        id: "나그네",
+        title: t("practice.poem.나그네.title"),
+        author: t("practice.poem.나그네.author"),
+        text: t("practice.poem.나그네.text"),
+      },
+      {
+        id: "나와나타샤와흰당나귀",
+        title: t("practice.poem.나와 나타샤와 흰 당나귀.title"),
+        author: t("practice.poem.나와 나타샤와 흰 당나귀.author"),
+        text: t("practice.poem.나와 나타샤와 흰 당나귀.text"),
+      },
+      {
+        id: "봄길",
+        title: t("practice.poem.봄길.title"),
+        author: t("practice.poem.봄길.author"),
+        text: t("practice.poem.봄길.text"),
+      },
+    ]
+  }
   // Primary state - what method is being used to import text
   const [importMethod, setImportMethod] = useState<"samples" | "file" | "url" | "paste">("samples")
 
@@ -159,7 +176,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
           setExtractedChapters(extractedFromText)
         }
       } catch (err) {
-        setError("파일을 읽는 중 오류가 발생했습니다.")
+        setError(t("common.fileReadError"))
         console.error("Error reading file:", err)
       } finally {
         setIsLoading(false)
@@ -488,7 +505,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
           setExtractedChapters(extractedFromText)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "파일을 읽는 중 오류가 발생했습니다.")
+        setError(err instanceof Error ? err.message : t("common.fileReadError"))
       } finally {
         setIsLoading(false)
       }
@@ -560,7 +577,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
           {/* Left sidebar - Import methods */}
           <div className="w-[200px] border-r border-border/10 bg-muted/30 p-6 flex flex-col">
             <DialogHeader className="mb-8 text-left">
-              <DialogTitle className="text-2xl font-extralight tracking-tight">텍스트</DialogTitle>
+              <DialogTitle className="text-2xl font-extralight tracking-tight">{t("practice.importText")}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-1 flex-1">
@@ -576,7 +593,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                 <BookOpen
                   className={`h-5 w-5 mr-3 ${importMethod === "samples" ? "text-foreground" : "text-muted-foreground/70"}`}
                 />
-                <span>한국 시</span>
+                <span>{t("practice.koreanPoems")}</span>
               </Button>
 
               <Button
@@ -591,7 +608,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                 <FileText
                   className={`h-5 w-5 mr-3 ${importMethod === "file" ? "text-foreground" : "text-muted-foreground/70"}`}
                 />
-                <span>파일</span>
+                <span>{t("common.file")}</span>
               </Button>
 
               <Button
@@ -606,7 +623,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                 <Globe
                   className={`h-5 w-5 mr-3 ${importMethod === "url" ? "text-foreground" : "text-muted-foreground/70"}`}
                 />
-                <span>URL</span>
+                <span>{t("common.url")}</span>
               </Button>
 
               <Button
@@ -621,7 +638,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                 <ClipboardCopy
                   className={`h-5 w-5 mr-3 ${importMethod === "paste" ? "text-foreground" : "text-muted-foreground/70"}`}
                 />
-                <span>붙여넣기</span>
+                <span>{t("common.paste")}</span>
               </Button>
             </div>
           </div>
@@ -633,12 +650,12 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
               {/* Samples */}
               {importMethod === "samples" && (
                 <div className="h-full flex flex-col">
-                  <h2 className="text-lg font-medium mb-6">한국 시 (Poems in Korean)</h2>
+                  <h2 className="text-lg font-medium mb-6">{t("practice.koreanPoemsTitle")}</h2>
 
                   {/* Sample list */}
                   <ScrollArea className="flex-1 pr-4">
                     <div className="space-y-4">
-                      {sampleTexts.poems.map((item, index) => (
+                      {sampleTexts.poems.map((item: { id: string; title: string; author: string; text: string }, index: number) => (
                         <div
                           key={index}
                           className={`group border border-border/10 rounded-md transition-all duration-200 ${
@@ -649,10 +666,10 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                         >
                           <div className="p-5">
                             <div className="flex justify-between items-start mb-3">
-                              <div>
-                                <h3 className="font-normal text-lg leading-tight">{item.title}</h3>
-                                <p className="text-sm text-muted-foreground mt-1">{item.author}</p>
-                              </div>
+                                <div>
+                                  <h3 className="font-normal text-lg leading-tight">{t(`practice.poem.${item.id}.title`)}</h3>
+                                  <p className="text-sm text-muted-foreground mt-1">{t(`practice.poem.${item.id}.author`)}</p>
+                                </div>
                               {selectedSample?.title === item.title && (
                                 <Check className="h-4 w-4 text-accent-foreground" />
                               )}
@@ -667,7 +684,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                                 onClick={() => handleSelectSample(item)}
                                 className="text-xs font-light px-0 hover:bg-transparent hover:text-foreground"
                               >
-                                미리보기
+                                {t("common.preview")}
                               </Button>
                               <Button
                                 variant="ghost"
@@ -682,7 +699,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                                     : "opacity-0 group-hover:opacity-100"
                                 }`}
                               >
-                                선택 <ArrowRight className="ml-1 h-3 w-3" />
+                                {t("common.select")} <ArrowRight className="ml-1 h-3 w-3" />
                               </Button>
                             </div>
                           </div>
@@ -706,7 +723,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                     {isLoading ? (
                       <div className="flex flex-col items-center">
                         <Loader2 className="h-10 w-10 animate-spin text-accent mb-6" />
-                        <p className="text-sm mb-2">파일 처리 중...</p>
+                        <p className="text-sm mb-2">{t("common.processingFile")}</p>
                         {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
                       </div>
                     ) : file ? (
@@ -728,7 +745,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                           }}
                           className="text-xs border-border/30 hover:bg-accent/5 hover:text-foreground"
                         >
-                          다른 파일 선택
+                          {t("common.selectAnotherFile")}
                         </Button>
                       </div>
                     ) : (
@@ -736,9 +753,9 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                         <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-6">
                           <FileText className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <p className="text-base font-medium mb-4">파일을 끌어다 놓거나 선택하세요</p>
+                        <p className="text-base font-medium mb-4">{t("common.dragAndDropFile")}</p>
                         <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-                          TXT, HTML, PDF, EPUB 파일을 지원합니다
+                          {t("common.supportedFileTypes")}
                         </p>
                         <input
                           ref={fileInputRef}
@@ -754,7 +771,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                           onClick={() => fileInputRef.current?.click()}
                           className="text-sm border-border/30 hover:bg-accent/5 hover:text-foreground"
                         >
-                          파일 선택
+                          {t("common.selectFile")}
                         </Button>
                         {error && (
                           <p className="text-xs text-error mt-4 p-2 bg-error/5 rounded-sm border border-error/20">
@@ -786,11 +803,11 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                         variant="outline"
                         onClick={() => {
                           // 실제 앱에서는 URL에서 텍스트를 가져오는 기능 구현
-                          alert("URL 가져오기는 개발 중입니다.")
+                          alert(t("common.urlImportInDevelopment"))
                         }}
                         className="rounded-md border-border/40 hover:bg-accent/5 hover:text-foreground hover:border-accent/40"
                       >
-                        가져오기
+                        {t("common.import")}
                       </Button>
                     </div>
                   </div>
@@ -798,7 +815,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                   <div className="flex-1 flex items-center justify-center border-2 border-dashed border-border/30 rounded-md">
                     <div className="text-center p-8">
                       <Globe className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-                      <p className="text-muted-foreground">URL에서 텍스트를 가져오면 여기에 표시됩니다</p>
+                      <p className="text-muted-foreground">{t("common.urlImportPreview")}</p>
                     </div>
                   </div>
                 </div>
@@ -809,11 +826,11 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                 <div className="h-full flex flex-col">
                   <div className="space-y-4 flex-1">
                     <Label htmlFor="paste-input" className="text-sm font-medium">
-                      텍스트
+                      {t("common.text")}
                     </Label>
                     <Textarea
                       id="paste-input"
-                      placeholder="여기에 텍스트를 붙여넣으세요..."
+                      placeholder={t("common.pasteTextHere")}
                       rows={15}
                       value={text}
                       onChange={handlePasteText}
@@ -861,7 +878,7 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                   onClick={() => onOpenChange(false)}
                   className="text-sm font-light hover:bg-transparent hover:text-foreground"
                 >
-                  취소
+                  {t("common.cancel")}
                 </Button>
 
                 {previewText ? (
@@ -881,11 +898,11 @@ export default function TextImportDialog({ open, onOpenChange, onImport, onSelec
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        처리 중...
+                        {t("common.processing")}
                       </>
                     ) : (
                       <>
-                        가져오기 <ArrowRight className="ml-2 h-4 w-4" />
+                        {t("common.import")} <ArrowRight className="ml-2 h-4 w-4" />
                       </>
                     )}
                   </Button>

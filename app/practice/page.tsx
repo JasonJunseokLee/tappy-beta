@@ -10,6 +10,7 @@ import TableOfContentsDialog from "@/components/table-of-contents-dialog"
 import SettingsDialog from "@/components/settings-dialog"
 import { useMobile } from "@/hooks/use-mobile"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useLanguage } from "@/contexts/language-context"
 import { validateAndFixChapterPositions, recalculateChapterPositions, flattenTableOfContents } from "@/utils/toc-utils"
 import { toast } from "@/hooks/use-toast"
 import { formatTextWithHeadings } from "@/utils/text-formatter"
@@ -17,6 +18,7 @@ import { findCurrentChapter, splitTextByChapters } from "@/utils/chapter-utils"
 import type { ChapterInfo } from "@/types/typing"
 
 export default function PracticePage() {
+  const { t } = useLanguage()
   const router = useRouter()
   const isMobile = useMobile()
   const [text, setText] = useState<string>("")
@@ -52,7 +54,7 @@ export default function PracticePage() {
         // 목차 위치 검증 및 수정
         if (session.text && session.chapters && session.chapters.length > 0) {
           // 챕터 내용 분할 처리
-          const processedChapters = splitTextByChapters(session.text, session.chapters)
+          const processedChapters = splitTextByChapters(session.text, session.chapters, t("common.fullText"))
           setChapters(processedChapters)
 
           // 현재 위치에 해당하는 챕터 찾기
@@ -137,14 +139,14 @@ export default function PracticePage() {
       const validatedChapters = validateAndFixChapterPositions(importedChapters, formattedText)
 
       // 챕터 내용 분할 처리
-      const processedChapters = splitTextByChapters(formattedText, validatedChapters)
+      const processedChapters = splitTextByChapters(formattedText, validatedChapters, t("common.fullText"))
 
       // 챕터가 없는 경우 기본 챕터 생성
       let finalChapters = processedChapters
       if (!processedChapters || processedChapters.length === 0) {
         const defaultChapter: ChapterInfo = {
           id: "default",
-          title: "전체 텍스트",
+          title: t("common.fullText"),
           position: 0,
           level: 1,
           content: formattedText,
@@ -269,7 +271,7 @@ export default function PracticePage() {
         const recalculatedChapters = recalculateChapterPositions(chapters, text)
 
         // 챕터 내용 분할 처리
-        const processedChapters = splitTextByChapters(text, recalculatedChapters)
+        const processedChapters = splitTextByChapters(text, recalculatedChapters, t("common.fullText"))
 
         setChapters(processedChapters)
 
@@ -391,8 +393,8 @@ export default function PracticePage() {
   const formatText = useCallback(() => {
     if (!text) {
       toast({
-        title: "텍스트 포맷팅 실패",
-        description: "텍스트가 없습니다.",
+        title: t("common.textFormattingFailed"),
+        description: t("common.noText"),
         variant: "destructive",
       })
       return
@@ -406,7 +408,7 @@ export default function PracticePage() {
       const recalculatedChapters = recalculateChapterPositions(chapters, formattedText)
 
       // 챕터 내용 분할 처리
-      const processedChapters = splitTextByChapters(formattedText, recalculatedChapters)
+      const processedChapters = splitTextByChapters(formattedText, recalculatedChapters, t("common.fullText"))
 
       // 상태 업데이트
       setText(formattedText)
@@ -430,15 +432,15 @@ export default function PracticePage() {
       localStorage.setItem("typingSession", JSON.stringify(session))
 
       toast({
-        title: "텍스트 포맷팅 완료",
-        description: "제목이 인식되어 포맷팅되었습니다.",
+        title: t("common.textFormattingComplete"),
+        description: t("common.titleRecognizedAndFormatted"),
       })
     } catch (error) {
       console.error("Error formatting text:", error)
-      setDebugInfo(`텍스트 포맷팅 오류: ${error}`)
+      setDebugInfo(`${t("common.textFormattingError")}: ${error}`)
       toast({
-        title: "텍스트 포맷팅 실패",
-        description: "오류가 발생했습니다. 콘솔을 확인하세요.",
+        title: t("common.textFormattingFailed"),
+        description: t("common.errorOccurredCheckConsole"),
         variant: "destructive",
       })
     }
@@ -534,13 +536,13 @@ export default function PracticePage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => router.push("/")}
-                aria-label="Home"
+                aria-label={t("common.home")}
                 className="rounded-full h-9 w-9"
               >
                 <Home className="h-5 w-5" />
               </Button>
               <h1 className="text-xl font-light tracking-tight truncate max-w-[200px] md:max-w-md">
-                {title || "제목 없음"}
+                {title || t("common.untitled")}
               </h1>
             </div>
 
@@ -552,8 +554,8 @@ export default function PracticePage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowTextImport(true)}
-                  aria-label="텍스트"
-                  title="텍스트 가져오기"
+                  aria-label={t("common.text")}
+                  title={t("practice.importText")}
                   className="rounded-full h-9 w-9"
                 >
                   <BookOpen className="h-5 w-5" />
@@ -564,8 +566,8 @@ export default function PracticePage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setShowToc(true)}
-                    aria-label="목차"
-                    title="목차"
+                    aria-label={t("practice.tableOfContents")}
+                    title={t("practice.tableOfContents")}
                     className="rounded-full h-9 w-9"
                   >
                     <List className="h-5 w-5" />
@@ -576,8 +578,8 @@ export default function PracticePage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSettings(true)}
-                  aria-label="설정"
-                  title="설정"
+                  aria-label={t("common.settings")}
+                  title={t("common.settings")}
                   className="rounded-full h-9 w-9"
                 >
                   <Settings className="h-5 w-5" />
@@ -624,27 +626,27 @@ export default function PracticePage() {
               <div className="h-16 w-16 mx-auto border border-border rounded-full flex items-center justify-center bg-background/80">
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="text-2xl font-light tracking-tight">텍스트를 선택하세요</h2>
+              <h2 className="text-2xl font-light tracking-tight">{t("common.selectTextHeading")}</h2>
               <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                샘플 텍스트를 선택하거나 직접 텍스트를 가져와 타이핑 연습을 시작하세요.
+                {t("common.selectTextDescription")}
               </p>
               <div className="pt-4">
                 <Button
                   onClick={() => setShowTextImport(true)}
                   className="rounded-full px-8 py-6 bg-foreground text-background hover:bg-foreground/90 shadow-md hover:shadow-lg transition-all duration-300"
                 >
-                  시작하기
+                  {t("common.start")}
                 </Button>
               </div>
 
               {/* 디버깅 정보 표시 (개발 중에만 사용) */}
               {process.env.NODE_ENV === "development" && (
                 <div className="mt-8 p-4 bg-muted/30 rounded-md text-xs text-left">
-                  <p className="font-mono">텍스트 길이: {text?.length || 0}</p>
-                  <p className="font-mono">챕터 수: {chapters?.length || 0}</p>
-                  <p className="font-mono">현재 챕터: {currentChapter?.title || "없음"}</p>
-                  <p className="font-mono">텍스트 로드됨: {isTextLoaded ? "예" : "아니오"}</p>
-                  <p className="font-mono">디버그: {debugInfo}</p>
+                  <p className="font-mono">{t("common.debugTextLength")}: {text?.length || 0}</p>
+                  <p className="font-mono">{t("common.debugChapterCount")}: {chapters?.length || 0}</p>
+                  <p className="font-mono">{t("common.debugCurrentChapter")}: {currentChapter?.title || t("common.debugNone")}</p>
+                  <p className="font-mono">{t("common.debugTextLoaded")}: {isTextLoaded ? t("common.debugYes") : t("common.debugNo")}</p>
+                  <p className="font-mono">{t("common.debugInfo")}: {debugInfo}</p>
                 </div>
               )}
             </div>
