@@ -2,8 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { RefreshCw, Space } from "lucide-react"
+import { Space, RefreshCw } from "lucide-react"
 import type { TypingInterfaceProps, VisibleLine } from "@/types/typing"
 import { useTyping } from "@/hooks/use-typing"
 import { splitTextIntoLines } from "@/utils/typing-utils"
@@ -12,99 +11,121 @@ import { TypingLine } from "@/components/typing/typing-line"
 import { TypingRhythmVisualizer } from "@/components/typing/typing-rhythm-visualizer"
 import { KeyboardShortcuts } from "@/components/typing/keyboard-shortcuts"
 import { DetailedStats } from "@/components/typing/detailed-stats"
+import { Button } from "@/components/ui/button"
 
+/**
+ * 타이핑 인터페이스 컴포넌트
+ * 사용자가 텍스트를 타이핑하고 실시간으로 피드백을 받을 수 있는 인터페이스를 제공합니다.
+ */
 export default function TypingInterface({ text, currentPosition, onPositionChange }: TypingInterfaceProps) {
-  // UI state
-  const [showStats, setShowStats] = useState<boolean>(false)
-  const [debugMode, setDebugMode] = useState<boolean>(false)
-  const [fixedWidth, setFixedWidth] = useState<number>(1200) // 기본 고정 너비
-  const [displayLines, setDisplayLines] = useState<string[]>([])
-  const [activeChunkIndex, setActiveChunkIndex] = useState<number>(0)
-  const [allLines, setAllLines] = useState<string[]>([])
-  const CHUNK_SIZE = 1000 // 한 청크당 줄 수
-  const VISIBLE_BUFFER = 5 // 위아래로 미리 로드할 줄 수
+  // 상수 값들 - 메모이제이션을 위해 컴포넌트 상단에 정의
+  const CHUNK_SIZE = 1000; // 한 청크당 줄 수
+  const VISIBLE_BUFFER = 5; // 위아래로 미리 로드할 줄 수
+  
+  // UI 상태
+  const [showStats, setShowStats] = useState<boolean>(false);
+  const [debugMode, setDebugMode] = useState<boolean>(false);
+  const [fixedWidth, setFixedWidth] = useState<number>(1200); // 기본 고정 너비
+  const [displayLines, setDisplayLines] = useState<string[]>([]);
+  const [activeChunkIndex, setActiveChunkIndex] = useState<number>(0);
+  const [allLines, setAllLines] = useState<string[]>([]);
 
   // 외부 위치 변경 추적을 위한 ref
-  const lastExternalPositionRef = useRef<number>(currentPosition)
-  const isInternalPositionChangeRef = useRef<boolean>(false)
+  const lastExternalPositionRef = useRef<number>(currentPosition);
+  const isInternalPositionChangeRef = useRef<boolean>(false);
 
-  // Refs
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const textDisplayRef = useRef<HTMLDivElement>(null)
-  const measureRef = useRef<HTMLDivElement>(null)
+  // DOM 요소를 위한 refs
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textDisplayRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
 
   // 화면 크기에 따라 고정 너비 설정
   useEffect(() => {
     const updateFixedWidth = () => {
       // 화면 너비의 90%로 설정하되, 최소 800px, 최대 1600px로 제한
-      const newWidth = Math.min(Math.max(window.innerWidth * 0.9, 800), 1600)
-      setFixedWidth(newWidth)
-    }
+      const newWidth = Math.min(Math.max(window.innerWidth * 0.9, 800), 1600);
+      setFixedWidth(newWidth);
+    };
 
     // 초기 설정
-    updateFixedWidth()
+    updateFixedWidth();
 
     // 화면 크기 변경 시 업데이트
-    window.addEventListener("resize", updateFixedWidth)
-    return () => window.removeEventListener("resize", updateFixedWidth)
-  }, [])
+    window.addEventListener("resize", updateFixedWidth);
+    return () => window.removeEventListener("resize", updateFixedWidth);
+  }, []);
 
-  // 텍스트를 청크로 분할하는 함수
+  /**
+   * 텍스트를 청크로 분할하는 함수
+   * @param text 분할할 텍스트
+   * @param containerWidth 컨테이너 너비
+   * @param measureElement 텍스트 너비 측정을 위한 요소
+   * @returns 청크로 분할된 텍스트 배열
+   */
   const processTextIntoChunks = useCallback((text: string, containerWidth: number, measureElement: HTMLElement) => {
     // 전체 텍스트를 줄로 분할
-    const allLines = splitTextIntoLines(text, measureElement, containerWidth)
+    const allLines = splitTextIntoLines(text, measureElement, containerWidth);
 
     // 청크로 분할
-    const chunks: string[][] = []
+    const chunks: string[][] = [];
     for (let i = 0; i < allLines.length; i += CHUNK_SIZE) {
-      chunks.push(allLines.slice(i, i + CHUNK_SIZE))
+      chunks.push(allLines.slice(i, i + CHUNK_SIZE));
     }
 
-    return chunks
-  }, [])
+    return chunks;
+  }, [CHUNK_SIZE]);
 
-  // Process text into visual lines on mount
-  useEffect(() => {
-    // Wait for the component to be mounted to measure text width
-    if (!measureRef.current || !textDisplayRef.current || fixedWidth === 0) return
-
-    // 고정 너비 사용 (여백 고려)
-    const containerWidth = fixedWidth - 40
-
-    // 측정 요소 생성 (동일한 스타일링 적용)
-    const measureElement = measureRef.current
-    measureElement.style.position = "absolute"
-    measureElement.style.visibility = "hidden"
-    measureElement.style.whiteSpace = "nowrap"
-    measureElement.style.fontFamily = "var(--font-mono)" // 고정 폰트 사용
-    measureElement.style.fontSize = "1.5rem" // text-2xl에 해당하는 크기
-    measureElement.style.letterSpacing = "normal"
-
-    // 텍스트를 시각적 줄로 분할
-    const lines = splitTextIntoLines(text, measureElement, containerWidth)
-    setAllLines(lines)
-
-    // 현재 활성 청크의 줄만 표시
-    updateDisplayLines(0, lines)
-  }, [text, fixedWidth])
-
-  // 현재 활성 청크의 줄 업데이트
+  /**
+   * 현재 활성 청크의 줄 업데이트
+   * @param chunkIndex 활성화할 청크 인덱스
+   * @param lines 전체 줄 배열 (기본값은 allLines)
+   */
   const updateDisplayLines = useCallback(
     (chunkIndex: number, lines: string[] = allLines) => {
-      const startIdx = chunkIndex * CHUNK_SIZE
-      const endIdx = Math.min(startIdx + CHUNK_SIZE + VISIBLE_BUFFER, lines.length)
-      setDisplayLines(lines.slice(startIdx, endIdx))
-      setActiveChunkIndex(chunkIndex)
+      const startIdx = chunkIndex * CHUNK_SIZE;
+      const endIdx = Math.min(startIdx + CHUNK_SIZE + VISIBLE_BUFFER, lines.length);
+      setDisplayLines(lines.slice(startIdx, endIdx));
+      setActiveChunkIndex(chunkIndex);
     },
     [allLines, CHUNK_SIZE, VISIBLE_BUFFER],
-  )
+  );
 
-  // 현재 활성화된 청크의 줄 가져오기
+  /**
+   * 컴포넌트 마운트 시 텍스트를 시각적 줄로 분할
+   */
+  useEffect(() => {
+    // 컴포넌트가 마운트되어 텍스트 너비를 측정할 수 있을 때까지 대기
+    if (!measureRef.current || !textDisplayRef.current || fixedWidth === 0) return;
+
+    // 고정 너비 사용 (여백 고려)
+    const containerWidth = fixedWidth - 40;
+
+    // 측정 요소 생성 (동일한 스타일링 적용)
+    const measureElement = measureRef.current;
+    measureElement.style.position = "absolute";
+    measureElement.style.visibility = "hidden";
+    measureElement.style.whiteSpace = "nowrap";
+    measureElement.style.fontFamily = "var(--font-mono)"; // 고정 폰트 사용
+    measureElement.style.fontSize = "1.5rem"; // text-2xl에 해당하는 크기
+    measureElement.style.letterSpacing = "normal";
+
+    // 텍스트를 시각적 줄로 분할
+    const lines = splitTextIntoLines(text, measureElement, containerWidth);
+    setAllLines(lines);
+
+    // 현재 활성 청크의 줄만 표시
+    updateDisplayLines(0, lines);
+  }, [text, fixedWidth, updateDisplayLines]);
+
+
+
+  /**
+   * 현재 활성화된 청크의 줄 가져오기
+   */
   const activeLines = useMemo(() => {
-    if (displayLines.length === 0) return []
-    return displayLines || []
-  }, [displayLines])
+    return displayLines.length === 0 ? [] : displayLines;
+  }, [displayLines]);
 
   // 타이핑 로직 훅 사용 - activeLines만 전달
   const typing = useTyping(activeLines, 0, { ignoreSymbols: true, autoAdvance: true })
@@ -329,7 +350,7 @@ export default function TypingInterface({ text, currentPosition, onPositionChang
       />
 
       <div className="flex justify-center w-full px-4 mx-auto mt-4">
-        <div style={{ width: `${fixedWidth}px` }}>
+        <div className="w-full max-w-[1600px] min-w-[800px] mx-auto">
           {/* 더블 스페이스 모드 토글 */}
 
           {/* 줄 완성 상태 표시 */}
@@ -377,6 +398,8 @@ export default function TypingInterface({ text, currentPosition, onPositionChang
                           autoCapitalize="off"
                           spellCheck="false"
                           data-form-type="other"
+                          aria-label="타이핑 입력창"
+                          placeholder="여기에 타이핑하세요"
                         />
                       </div>
                     )}

@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import type { TypingStats } from "@/types/typing"
 import { normalizeText, isSymbol, calculateKoreanKeystrokes, countErrors } from "@/utils/typing-utils"
 
@@ -79,7 +78,7 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
   }, [stats.keyPressCount, stats.errorCount, startTime])
 
   // 타이핑 리듬 업데이트
-  const updateTypingRhythm = () => {
+  const updateTypingRhythm = useCallback(() => {
     const now = Date.now()
     if (lastKeyPressTimeRef.current > 0) {
       const interval = now - lastKeyPressTimeRef.current
@@ -88,15 +87,12 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
         setTypingRhythm((prev) => {
           // 최대 20개 간격만 저장
           const newRhythm = [...prev, interval]
-          if (newRhythm.length > 20) {
-            return newRhythm.slice(-20)
-          }
-          return newRhythm
+          return newRhythm.length > 20 ? newRhythm.slice(-20) : newRhythm
         })
       }
     }
     lastKeyPressTimeRef.current = now
-  }
+  }, [])
 
   // Check if the current line is complete
   const memoizedCheckLineCompletion = useCallback(
@@ -145,8 +141,60 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
   // checkLineCompletion 함수를 메모이제이션된 버전으로 교체
   const checkLineCompletion = memoizedCheckLineCompletion
 
+  // 줄 이동 함수 - 선언 먼저 해서 순환 참조 방지
+  const advanceToNextLine = useCallback(() => {
+    // 한글 입력 중이면 이동하지 않음
+    if (isComposing) return
+
+    // 이미 다음 줄로 이동 중인지 확인 (중복 호출 방지)
+    if (lineIndexRef.current !== currentLineIndex) return
+
+    // 현재 줄이 최소 길이 이상 입력되었는지 확인
+    const currentLineText = displayLines[currentLineIndex] || ""
+    const normalizedLineText = normalizeText(currentLineText)
+    const normalizedTypedText = normalizeText(typedText)
+
+    // 줄이 완전히 일치하거나 매우 유사한 경우에만 다음 줄로 이동
+    if (
+      normalizedTypedText === normalizedLineText ||
+      (normalizedTypedText.length >= normalizedLineText.length * 0.99 &&
+        normalizedTypedText.includes(normalizedLineText.slice(-5)))
+    ) {
+      if (currentLineIndex < displayLines.length - 1) {
+        // 스페이스바 이후의 텍스트 추출 (있는 경우)
+        let pendingText = ""
+        const spaceIndex = typedText.lastIndexOf(" ")
+
+        // 스페이스바 이후에 텍스트가 있으면 저장
+        if (spaceIndex !== -1 && spaceIndex < typedText.length - 1) {
+          pendingText = typedText.substring(spaceIndex + 1)
+        }
+
+        // 다음 줄로 이동
+        setCurrentLineIndex((prev) => prev + 1)
+
+        // 저장된 텍스트가 있으면 다음 줄에 적용
+        if (pendingText) {
+          setTimeout(() => {
+            setTypedText(pendingText)
+            lastInputValueRef.current = pendingText
+          }, 10)
+        } else {
+          // 없으면 초기화
+          setTypedText("")
+          lastInputValueRef.current = ""
+        }
+
+        setLineComplete(false)
+      } else {
+        // 모든 줄 완료
+        setIsCompleted(true)
+      }
+    }
+  }, [isComposing, currentLineIndex, displayLines, typedText])
+
   // 스페이스바 처리 함수 - 별도로 분리
-  const handleSpaceKey = (inputValue: string) => {
+  const handleSpaceKey = useCallback((inputValue: string) => {
     const now = Date.now()
     const isDoubleSpace = now - lastSpaceTime < 500 // 500ms 이내에 두 번 스페이스바를 누르면 더블 스페이스로 간주
 
@@ -174,10 +222,10 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
     // 스페이스바 시간 업데이트
     setLastSpaceTime(now)
     return false
-  }
+  }, [doubleSpaceMode, lastSpaceTime, lineComplete, advanceToNextLine])
 
   // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const inputValue = e.target.value
 
     // 시작 타이머 설정
@@ -276,77 +324,35 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
     // 상태 업데이트
     setTypedText(inputValue)
     lastInputValueRef.current = inputValue
-  }
+  }, [startTime, isComposing, lineComplete, typedText, displayLines, currentLineIndex, ignoreSymbols, autoAdvance, stats.errorCount])
 
-  // 줄 이동 함수
-  const advanceToNextLine = () => {
-    // 한글 입력 중이면 이동하지 않음
-    if (isComposing) return
+  // setCurrentLineIndex 함수 정의
+  const setCurrentLineIndexWithReset = useCallback((index: number) => {
+    setCurrentLineIndex(index)
+    setTypedText("")
+    setLineComplete(false)
+    lastInputValueRef.current = ""
+    pendingTextRef.current = ""
+  }, [])
 
-    // 이미 다음 줄로 이동 중인지 확인 (중복 호출 방지)
-    if (lineIndexRef.current !== currentLineIndex) return
-
-    // 현재 줄이 최소 길이 이상 입력되었는지 확인
-    const currentLineText = displayLines[currentLineIndex] || ""
-    const normalizedLineText = normalizeText(currentLineText)
-    const normalizedTypedText = normalizeText(typedText)
-
-    // 줄이 완전히 일치하거나 매우 유사한 경우에만 다음 줄로 이동
-    if (
-      normalizedTypedText === normalizedLineText ||
-      (normalizedTypedText.length >= normalizedLineText.length * 0.99 &&
-        normalizedTypedText.includes(normalizedLineText.slice(-5)))
-    ) {
-      if (currentLineIndex < displayLines.length - 1) {
-        // 스페이스바 이후의 텍스트 추출 (있는 경우)
-        let pendingText = ""
-        const spaceIndex = typedText.lastIndexOf(" ")
-
-        // 스페이스바 이후에 텍스트가 있으면 저장
-        if (spaceIndex !== -1 && spaceIndex < typedText.length - 1) {
-          pendingText = typedText.substring(spaceIndex + 1)
-        }
-
-        // 다음 줄로 이동
-        setCurrentLineIndex((prev) => prev + 1)
-
-        // 저장된 텍스트가 있으면 다음 줄에 적용
-        if (pendingText) {
-          setTimeout(() => {
-            setTypedText(pendingText)
-            lastInputValueRef.current = pendingText
-          }, 10)
-        } else {
-          // 없으면 초기화
-          setTypedText("")
-          lastInputValueRef.current = ""
-        }
-
-        setLineComplete(false)
-      } else {
-        // 모든 줄 완료
-        setIsCompleted(true)
-      }
-    }
-  }
+  // 이 함수는 위에서 이미 선언되었으므로 제거
 
   // 이전 줄로 이동하는 함수
-  const goToPreviousLine = () => {
+  const goToPreviousLine = useCallback(() => {
     // 한글 입력 중이면 이동하지 않음
     if (isComposing) return
 
     // 첫 번째 줄이 아닌 경우에만 이전 줄로 이동
     if (currentLineIndex > 0) {
-      setCurrentLineIndex((prev) => prev - 1)
-      setTypedText("")
+      setCurrentLineIndexWithReset(currentLineIndex - 1)
       setLineComplete(false)
       lastInputValueRef.current = ""
       pendingTextRef.current = ""
     }
-  }
+  }, [isComposing, currentLineIndex])
 
   // 줄 스킵 함수 - 진행도 체크 없이 무조건 다음 줄로 이동
-  const skipToNextLine = () => {
+  const skipToNextLine = useCallback(() => {
     // 한글 입력 중이면 이동하지 않음
     if (isComposing) return
 
@@ -361,7 +367,7 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
         pendingTextRef.current = ""
       }
 
-      setCurrentLineIndex((prev) => prev + 1)
+      setCurrentLineIndexWithReset(currentLineIndex + 1)
 
       // 저장된 텍스트가 있으면 다음 줄에 적용
       if (pendingTextRef.current) {
@@ -381,10 +387,10 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
       // 모든 줄 완료
       setIsCompleted(true)
     }
-  }
+  }, [isComposing, currentLineIndex, displayLines, typedText])
 
   // Reset function
-  const reset = () => {
+  const reset = useCallback(() => {
     setStartTime(null)
     setStats({
       wpm: 0,
@@ -396,7 +402,7 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
       correctionCount: 0,
       keyPressCount: 0,
     })
-    setCurrentLineIndex(initialLineIndex)
+    setCurrentLineIndexWithReset(initialLineIndex)
     setTypedText("")
     setLineComplete(false)
     setIsCompleted(false)
@@ -405,7 +411,7 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
     lastKeyPressTimeRef.current = 0
     pendingTextRef.current = ""
     setLastSpaceTime(0)
-  }
+  }, [initialLineIndex])
 
   // 더블 스페이스 모드 토글 함수
   const toggleDoubleSpaceMode = () => {
@@ -442,30 +448,22 @@ export function useTyping(displayLines: string[], initialLineIndex = 0, options:
     typedText,
     currentLineIndex,
     lineComplete,
-    isCompleted,
     isComposing,
-    progress,
+    isCompleted,
+    startTime,
     stats,
     typingRhythm,
-    startTime,
     lastKeyPressed,
     doubleSpaceMode,
-    setIsComposing,
     handleInputChange,
+    setIsComposing,
     checkLineCompletion,
     advanceToNextLine,
     goToPreviousLine,
     skipToNextLine,
     toggleDoubleSpaceMode,
     reset,
-    // 새로 추가하는 함수
-    setCurrentLineIndex: (index: number) => {
-      setCurrentLineIndex(index)
-      setTypedText("")
-      setLineComplete(false)
-      lastInputValueRef.current = ""
-      pendingTextRef.current = ""
-    },
+    setCurrentLineIndex: setCurrentLineIndexWithReset,
     handleCompositionEnd,
     textareaRef,
   }

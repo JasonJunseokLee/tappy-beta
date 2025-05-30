@@ -526,24 +526,6 @@ export default function ChapterBasedTypingInterface({
             </div>
           )}
 
-          {/* 디버그 정보 (개발 모드에서만 표시) */}
-          {process.env.NODE_ENV === "development" && (
-            <div className="mb-4 p-2 bg-muted/10 rounded-md border border-border/10 text-xs">
-              <details>
-                <summary className="cursor-pointer text-muted-foreground">디버그 정보</summary>
-                <div className="mt-2 space-y-1 font-mono">
-                  <p>챕터 ID: {chapter.id}</p>
-                  <p>챕터 내용 길이: {chapter.content?.length || 0}</p>
-                  <p>표시 줄 수: {displayLines.length}</p>
-                  <p>현재 줄: {typing.currentLineIndex}</p>
-                  <p>초기화됨: {isInitialized ? "예" : "아니오"}</p>
-                  <p>처리 중: {isProcessingText ? "예" : "아니오"}</p>
-                  <p>오류: {processingError || "없음"}</p>
-                </div>
-              </details>
-            </div>
-          )}
-
           {/* Completion message */}
           {typing.isCompleted && (
             <div className="text-center mt-16 mb-16 animate-fade-in">
