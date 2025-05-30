@@ -3,25 +3,269 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 기본 색상 변수 - 라이트 모드 */
+  --color-background: 255 255 255; /* 흰색 배경 */
+  --color-foreground: 0 0 0; /* 검은색 텍스트 */
+  --color-muted: 245 245 245; /* 연한 회색 */
+  --color-muted-foreground: 115 115 115; /* 중간 회색 텍스트 */
+  --color-accent: 230 230 230; /* 강조 배경 */
+  --color-accent-foreground: 60 60 60; /* 강조 텍스트 */
+  --color-border: 240 240 240; /* 경계선 */
+  --color-error: 220 38 38; /* 오류 색상 */
+
+  /* 공통 변수 */
+  --font-sans: "Noto Sans", "Noto Sans KR", sans-serif;
+  --font-mono: "Noto Sans Mono", monospace;
+  --grid-unit: 8px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition-slow: 0.5s;
+  --transition-medium: 0.3s;
+  --transition-fast: 0.15s;
+
+  /* 타이포그래피 */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+
+  /* 여백 */
+  --space-1: calc(var(--grid-unit) * 1);
+  --space-2: calc(var(--grid-unit) * 2);
+  --space-3: calc(var(--grid-unit) * 3);
+  --space-4: calc(var(--grid-unit) * 4);
+  --space-5: calc(var(--grid-unit) * 5);
+  --space-6: calc(var(--grid-unit) * 6);
+  --space-8: calc(var(--grid-unit) * 8);
+  --space-10: calc(var(--grid-unit) * 10);
+  --space-12: calc(var(--grid-unit) * 12);
+  --space-16: calc(var(--grid-unit) * 16);
+
+  /* shadcn 변수 */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
+  --radius: 0.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  /* 다크 모드 색상 변수 */
+  --color-background: 10 10 10; /* 거의 검은색 배경 */
+  --color-foreground: 245 245 245; /* 거의 흰색 텍스트 */
+  --color-muted: 30 30 30; /* 어두운 회색 */
+  --color-muted-foreground: 180 180 180; /* 밝은 회색 텍스트 */
+  --color-accent: 40 40 40; /* 강조 배경 */
+  --color-accent-foreground: 220 220 220; /* 강조 텍스트 */
+  --color-border: 50 50 50; /* 경계선 */
+  --color-error: 248 113 113; /* 다크 모드용 오류 색상 */
+
+  /* shadcn 다크모드 변수 */
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 0 0% 83.1%;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* 타이포그래피 기본 스타일 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-light tracking-tight;
+  }
+
+  /* 공백과 여백의 일관성 */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* 기본 트랜지션 */
+  .transition-theme {
+    transition-property: color, background-color, border-color;
+    transition-duration: var(--transition-medium);
+    transition-timing-function: ease-in-out;
+  }
+
+  /* 타이핑 인터페이스 특화 스타일 */
+  .typing-guide {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xl);
+    line-height: 1.75;
+  }
+
+  .typing-input {
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xl);
+  }
+
+  .typing-stats {
+    font-size: var(--font-size-sm);
+    color: hsl(var(--muted-foreground));
+    transition-property: color, background-color, border-color;
+    transition-duration: var(--transition-medium);
+    transition-timing-function: ease-in-out;
+  }
+
+  .typing-progress {
+    height: 1px;
+    background-color: hsl(var(--muted));
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .typing-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1px;
+    background-color: hsl(var(--foreground));
+    transition: width 0.3s ease-out;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+
+  /* 그리드 정렬 유틸리티 */
+  .grid-aligned {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--grid-unit), 1fr));
+    gap: var(--grid-unit);
+  }
+
+  /* 공백 활용 유틸리티 */
+  .space-breath {
+    animation: breathe 8s infinite ease-in-out;
+  }
+
+  /* 타이포그래피 유틸리티 */
+  .text-mono {
+    font-family: var(--font-mono);
+    letter-spacing: -0.03em;
+  }
+}
+
+/* 애니메이션 */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 커스텀 스크롤바 */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--accent-foreground) / 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--accent-foreground) / 0.5);
+}
+
+/* 다크 모드 전환 애니메이션 */
+.theme-transition {
+  transition: color 0.5s, background-color 0.5s;
+}
+
+/* 애니메이션 클래스 */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.5s ease-in-out;
+}
+
+.animate-breathe {
+  animation: breathe 8s infinite ease-in-out;
 }

@@ -1,0 +1,900 @@
+"use client"
+
+import type React from "react"
+import { useState, useRef, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { FileText, Loader2, ArrowRight, Globe, ClipboardCopy, BookOpen, Check } from "lucide-react"
+import { extractTableOfContents } from "@/utils/toc-utils"
+import { extractEpubToc, adjustChapterPositions } from "@/utils/epub-utils"
+import { formatTextWithHeadings } from "@/utils/text-formatter"
+
+interface TextImportDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onImport: (text: string, title: string, chapters: { title: string; position: number }[]) => void
+  onSelectSample: (text: string, title: string) => void
+}
+
+// 샘플 텍스트 데이터 - 한국 시
+const sampleTexts = {
+  poems: [
+    {
+      title: "진달래꽃",
+      author: "김소월",
+      text: "나 보기가 역겨워\n가실 때에는\n말없이 고이 보내 드리우리다\n\n영변에 약산\n진달래꽃\n아름 따다 가실 길에 뿌리우리다\n\n가시는 걸음 걸음\n놓인 그 꽃을\n사뿐히 즈려밟고 가시옵소서\n\n나 보기가 역겨워\n가실 때에는\n죽어도 아니 눈물 흘리우리다",
+    },
+    {
+      title: "서시",
+      author: "윤동주",
+      text: "죽는 날까지 하늘을 우러러\n한 점 부끄럼이 없기를,\n잎새에 이는 바람에도\n나는 괴로워했다.\n별을 노래하는 마음으로\n모든 죽어 가는 것을 사랑해야지\n그리고 나한테 주어진 길을\n걸어가야겠다.\n\n오늘 밤에도 별이 바람에 스치운다.",
+    },
+    {
+      title: "그 꽃",
+      author: "고은",
+      text: "내려갈 때 보았네\n올라갈 때 보지 못한\n그 꽃",
+    },
+    {
+      title: "청포도",
+      author: "이육사",
+      text: "내 고장 칠월은\n청포도가 익어 가는 시절.\n\n이 마을 전설이 주저리주저리 열리고\n먼 데 하늘이 꿈꾸며 알알이 들어와 박혀.\n\n하늘 밑 푸른 바다가 가슴을 열고\n흰 돛단배가 곱게 밀려서 오면\n\n내가 바라는 손님은 고달픈 몸으로\n청포(靑袍)를 입고 찾아온다고 했으니,\n\n내 그를 맞아 이 포도를 따 먹으면\n두 손은 함뿍 적셔도 좋으련\n\n아이야 우리 식탁엔 은쟁반에\n하이얀 모시 수건을 마련해 두렴.",
+    },
+    {
+      title: "풀꽃",
+      author: "나태주",
+      text: "자세히 보아야 예쁘다\n오래 보아야 사랑스럽다\n너도 그렇다",
+    },
+    {
+      title: "독을 차고",
+      author: "김영랑",
+      text: "나의 마음은 고요한 물결\n바람 한 점 불지 않아도\n소란스러운 파도가 이는 까닭은\n\n그것은 눈에 보이지 않는\n물속 깊은 곳에서\n무엇이 움직이는 까닭이다\n\n나의 마음은 고요한 바다\n나는 그 바다 밑을 헤엄쳐 다니는\n흉칙한 물고기",
+    },
+    {
+      title: "님의 침묵",
+      author: "한용운",
+      text: "님은 갔습니다. 아아, 사랑하는 나의 님은 갔습니다.\n푸른 산빛을 깨치고 단풍나무 숲을 향하여 난 작은 길을 걸어서, 차마 떨치고 갔습니다.\n황금의 꽃같이 굳고 빛나던 옛 맹세는 차디찬 티끌이 되어서 한숨의 미풍에 날아갔습니다.\n날카로운 첫키스의 추억은 나의 운명의 지침을 돌려놓고, 뒷걸음쳐서 사라졌습니다.\n\n나는 향기로운 님의 말소리에 귀먹고, 꽃다운 님의 얼굴에 눈멀었습니다.\n사랑도 사람의 일이라 만날 때에 미리 떠날 것을 염려하고 경계하지 아니한 것은 아니지만,\n이별은 뜻밖의 일이 되고, 놀란 가슴은 새로운 슬픔에 터집니다.\n\n그러나 이별을 쓸데없는 눈물의 원천을 만들고 마는 것은 스스로 사랑을 깨치는 것인 줄 아는 까닭에,\n걷잡을 수 없는 슬픔의 힘을 옮겨서 새 희망의 정수박이에 들어부었습니다.\n\n우리는 만날 때에 떠날 것을 염려하는 것과 같이 떠날 때에 다시 만날 것을 믿습니다.\n아아, 님은 갔지마는 나는 님을 보내지 아니하였습니다.\n제 곡조를 못 이기는 사랑의 노래는 님의 침묵을 휩싸고 돕니다.",
+    },
+    {
+      title: "나그네",
+      author: "박목월",
+      text: "강나루 건너서\n밀밭 길을\n\n구름에 달 가듯이\n가는 나그네\n\n길은 외줄기\n남도 삼백리\n\n술 익는 마을마다\n타는 저녁놀\n\n구름에 달 가듯이\n가는 나그네",
+    },
+    {
+      title: "나와 나타샤와 흰 당나귀",
+      author: "백석",
+      text: "눈은 내리고\n나는 흰 당나귀 타고\n\n흰 당나귀는\n그대가 타고\n\n눈길을 걷는다\n\n눈은 내리고\n\n흰 당나귀 타고 그대가 가는 곳\n\n동백꽃 피는 숲으로 가는 바닷길\n\n흰 당나귀 타고 가는 나와 그대는\n\n눈 속에서 만난 연인이 되고\n\n당나귀를 타고 산을 오르는 것은\n\n당나귀가 길을 알고 있는 까닭이다\n\n그대가 웃는 모습은\n\n눈이 와서 참 좋다",
+    },
+    {
+      title: "봄길",
+      author: "정호승",
+      text: "길이 끝나는 곳에서도\n길이 있다\n길이 끝나는 곳에서도\n길이 되는 사람이 있다\n\n스스로 봄길이 되어\n끝없이 걸어가는 사람이 있다\n\n강물은 흐르다가 바다에 이르러 멈추지만\n바다 그 너머 하늘 가에 닿아\n다시 비가 되어 내리고\n\n비는 내리다가 그치지만\n다시 땅속에 스며 샘물이 되어 솟는다\n\n사랑도 강물처럼 흐르고 비처럼 내리는 것이다\n\n길이 끝나는 곳에서도\n길이 되는 사람이 있다\n\n스스로 봄길이 되어\n끝없이 걸어가는 사람이 있다",
+    },
+  ],
+}
+
+export default function TextImportDialog({ open, onOpenChange, onImport, onSelectSample }: TextImportDialogProps) {
+  // Primary state - what method is being used to import text
+  const [importMethod, setImportMethod] = useState<"samples" | "file" | "url" | "paste">("samples")
+
+  // Content state
+  const [title, setTitle] = useState<string>("")
+  const [text, setText] = useState<string>("")
+  const [url, setUrl] = useState<string>("")
+  const [file, setFile] = useState<File | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>("")
+  const [previewText, setPreviewText] = useState<string>("")
+  const [selectedSample, setSelectedSample] = useState<{ title: string; text: string; author?: string } | null>(null)
+  const [extractedChapters, setExtractedChapters] = useState<any[]>([])
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Reset preview when import method changes
+  useEffect(() => {
+    setPreviewText("")
+    setSelectedSample(null)
+    setExtractedChapters([])
+  }, [importMethod])
+
+  // Load necessary libraries
+  useEffect(() => {
+    if (!open) return
+
+    // Only load libraries if file import is selected
+    if (importMethod === "file") {
+      // PDF.js preload
+      const preloadPdfJs = () => {
+        const script = document.createElement("script")
+        script.src = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"
+        script.async = true
+        document.head.appendChild(script)
+
+        script.onload = () => {
+          if ((window as any).pdfjsLib) {
+            ;(window as any).pdfjsLib.GlobalWorkerOptions.workerSrc =
+              "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
+          }
+        }
+      }
+
+      // JSZip preload
+      const preloadJsZip = () => {
+        const script = document.createElement("script")
+        script.src = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"
+        script.async = true
+        document.head.appendChild(script)
+      }
+
+      preloadPdfJs()
+      preloadJsZip()
+    }
+  }, [open, importMethod])
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0]
+      setFile(selectedFile)
+      setTitle(selectedFile.name.split(".")[0])
+      setIsLoading(true)
+      setError("")
+      setExtractedChapters([])
+
+      try {
+        const { content: fileContent, chapters } = await readFile(selectedFile)
+        console.log("File content loaded, length:", fileContent.length)
+        setText(fileContent)
+        setPreviewText(fileContent.substring(0, 300) + (fileContent.length > 300 ? "..." : ""))
+
+        if (chapters && chapters.length > 0) {
+          console.log("Extracted chapters:", chapters)
+          setExtractedChapters(chapters)
+        } else {
+          // 목차가 추출되지 않았으면 텍스트에서 추출 시도
+          const extractedFromText = extractTableOfContents(fileContent)
+          console.log("Chapters extracted from text:", extractedFromText)
+          setExtractedChapters(extractedFromText)
+        }
+      } catch (err) {
+        setError("파일을 읽는 중 오류가 발생했습니다.")
+        console.error("Error reading file:", err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  // 파일 읽기 함수 수정
+  const readFile = async (file: File): Promise<{ content: string; chapters?: any[] }> => {
+    return new Promise((resolve, reject) => {
+      const fileType = file.type.toLowerCase()
+      const fileName = file.name.toLowerCase()
+
+      // 텍스트 파일 처리
+      if (fileType === "text/plain" || fileName.endsWith(".txt")) {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            const content = event.target.result as string
+            console.log("Loaded text file content:", content.substring(0, 100) + "...")
+            resolve({ content })
+          } else {
+            reject(new Error("파일을 읽을 수 없습니다."))
+          }
+        }
+        reader.onerror = () => reject(reader.error)
+        reader.readAsText(file)
+      }
+      // PDF 파일 처리
+      else if (fileType === "application/pdf" || fileName.endsWith(".pdf")) {
+        setIsLoading(true)
+
+        // PDF.js 라이브러리 동적 로드
+        const loadPdfJs = async () => {
+          if (!(window as any).pdfjsLib) {
+            // PDF.js 라이브러리 로드
+            const pdfjsScript = document.createElement("script")
+            pdfjsScript.src = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"
+            document.head.appendChild(pdfjsScript)
+
+            // 라이브러리 로드 완료 대기
+            await new Promise<void>((resolve) => {
+              pdfjsScript.onload = () => resolve()
+            })
+
+            // 워커 설정
+            ;(window as any).pdfjsLib.GlobalWorkerOptions.workerSrc =
+              "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
+          }
+
+          return (window as any).pdfjsLib
+        }
+
+        loadPdfJs()
+          .then(async (pdfjsLib) => {
+            try {
+              // 파일을 ArrayBuffer로 읽기
+              const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = () => resolve(reader.result as ArrayBuffer)
+                reader.onerror = reject
+                reader.readAsArrayBuffer(file)
+              })
+
+              // PDF 문서 로드
+              const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
+              const pdf = await loadingTask.promise
+
+              // 목차 추출 시도
+              const outline = await pdf.getOutline()
+              const chapters: any[] = []
+
+              if (outline && outline.length > 0) {
+                // PDF 목차 항목을 챕터 정보로 변환
+                const processOutlineItem = (item: any, level = 1): any => {
+                  const dest = item.dest
+                  let position = 0
+
+                  // 위치 정보가 있으면 사용
+                  if (typeof dest === "string") {
+                    // 문자열 형태의 목적지는 페이지 번호로 대략적인 위치 추정
+                    position = Number.parseInt(dest.replace(/[^0-9]/g, "")) * 1000 || 0
+                  } else if (Array.isArray(dest) && dest.length > 0) {
+                    // 배열 형태의 목적지에서 페이지 참조 추출
+                    const pageRef = dest[0]
+                    if (pageRef && typeof pageRef === "object" && "num" in pageRef) {
+                      position = (pageRef as any).num * 1000
+                    }
+                  }
+
+                  const chapter = {
+                    id: Math.random().toString(36).substring(2, 9),
+                    title: item.title,
+                    position,
+                    level,
+                  }
+
+                  if (item.items && item.items.length > 0) {
+                    chapter.children = item.items.map((child: any) => processOutlineItem(child, level + 1))
+                  }
+
+                  return chapter
+                }
+
+                outline.forEach((item: any) => {
+                  chapters.push(processOutlineItem(item))
+                })
+              }
+
+              // 모든 페이지의 텍스트 추출
+              let fullText = ""
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i)
+                const textContent = await page.getTextContent()
+                const pageText = textContent.items.map((item: any) => item.str).join(" ")
+
+                fullText += pageText + "\n\n"
+              }
+
+              // 목차가 없으면 텍스트에서 추출 시도
+              if (chapters.length === 0) {
+                const extractedChapters = extractTableOfContents(fullText)
+                resolve({ content: fullText, chapters: extractedChapters })
+              } else {
+                resolve({ content: fullText, chapters })
+              }
+            } catch (error) {
+              console.error("PDF 처리 중 오류:", error)
+              reject(new Error("PDF 파일을 처리하는 중 오류가 발생했습니다."))
+            } finally {
+              setIsLoading(false)
+            }
+          })
+          .catch((error) => {
+            console.error("PDF.js 로드 중 오류:", error)
+            setIsLoading(false)
+            reject(new Error("PDF 처리 라이브러리를 로드하는 중 오류가 발생했습니다."))
+          })
+      }
+      // EPUB 파일 처리 - 개선된 버전
+      else if (fileName.endsWith(".epub")) {
+        setIsLoading(true)
+
+        // JSZip 라이브러리 동적 로드
+        const loadJsZip = async () => {
+          if (!(window as any).JSZip) {
+            // JSZip 라이브러리 로드
+            const jsZipScript = document.createElement("script")
+            jsZipScript.src = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"
+            document.head.appendChild(jsZipScript)
+
+            // 라이브러리 로드 완료 대기
+            await new Promise<void>((resolve) => {
+              jsZipScript.onload = () => resolve()
+            })
+          }
+
+          return (window as any).JSZip
+        }
+
+        loadJsZip()
+          .then(async (JSZip) => {
+            try {
+              // 파일을 ArrayBuffer로 읽기
+              const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = () => resolve(reader.result as ArrayBuffer)
+                reader.onerror = reject
+                reader.readAsArrayBuffer(file)
+              })
+
+              // EPUB 파일 압축 해제 (EPUB는 기본적으로 ZIP 파일)
+              const zip = new JSZip()
+              const contents = await zip.loadAsync(arrayBuffer)
+
+              // 모든 파일 목록 가져오기
+              const fileList = Object.keys(contents.files)
+              console.log("EPUB files:", fileList)
+
+              // 목차 추출 시도
+              const { chapters, tocFound } = await extractEpubToc(contents, fileList)
+
+              // 콘텐츠 파일 찾기 (XHTML 파일)
+              let fullText = ""
+              const contentFiles: string[] = []
+
+              // EPUB 파일 내의 모든 파일 검사
+              await Promise.all(
+                Object.keys(contents.files).map(async (filename) => {
+                  if (filename.endsWith(".xhtml") || filename.endsWith(".html") || filename.endsWith(".xml")) {
+                    contentFiles.push(filename)
+                  }
+                }),
+              )
+
+              // 콘텐츠 파일에서 텍스트 추출
+              for (const filename of contentFiles) {
+                const content = await contents.file(filename)?.async("text")
+                if (content) {
+                  // HTML 태그 제거
+                  const tempDiv = document.createElement("div")
+                  tempDiv.innerHTML = content
+                  fullText += tempDiv.textContent || tempDiv.innerText || ""
+                  fullText += "\n\n"
+                }
+              }
+
+              // 목차 위치 조정
+              let finalChapters = chapters
+              if (chapters.length > 0) {
+                finalChapters = adjustChapterPositions(chapters, fullText)
+              } else {
+                // 목차가 추출되지 않았으면 텍스트에서 추출 시도
+                finalChapters = extractTableOfContents(fullText)
+              }
+
+              resolve({ content: fullText, chapters: finalChapters })
+            } catch (error) {
+              console.error("EPUB 처리 중 오류:", error)
+              reject(new Error("EPUB 파일을 처리하는 중 오류가 발생했습니다."))
+            } finally {
+              setIsLoading(false)
+            }
+          })
+          .catch((error) => {
+            console.error("JSZip 로드 중 오류:", error)
+            setIsLoading(false)
+            reject(new Error("EPUB 처리 라이브러리를 로드하는 중 오류가 발생했습니다."))
+          })
+      }
+      // HTML 파일 처리
+      else if (fileType === "text/html" || fileName.endsWith(".html") || fileName.endsWith(".htm")) {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            // HTML에서 텍스트만 추출하는 간단한 방법
+            const htmlContent = event.target.result as string
+            const tempDiv = document.createElement("div")
+            tempDiv.innerHTML = htmlContent
+            const content = tempDiv.textContent || tempDiv.innerText || ""
+
+            // 목차 추출 시도
+            const chapters = extractTableOfContents(content)
+
+            resolve({ content, chapters })
+          } else {
+            reject(new Error("HTML 파일을 읽을 수 없습니다."))
+          }
+        }
+        reader.onerror = () => reject(reader.error)
+        reader.readAsText(file)
+      }
+      // 지원하지 않는 파일 형식
+      else {
+        reject(new Error("지원하지 않는 파일 형식입니다. TXT, HTML, PDF, EPUB 파일만 지원합니다."))
+      }
+    })
+  }
+
+  const handlePasteText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.target.value
+    setText(pastedText)
+    setPreviewText(pastedText.substring(0, 300) + (pastedText.length > 300 ? "..." : ""))
+
+    // 목차 추출 시도
+    const chapters = extractTableOfContents(pastedText)
+    setExtractedChapters(chapters)
+  }
+
+  // handleImport 함수 수정
+  const handleImport = () => {
+    if (!text) return
+
+    console.log("Importing text, length:", text.length)
+    // 추출된 목차가 있으면 사용, 없으면 텍스트에서 추출
+    const chapters = extractedChapters.length > 0 ? extractedChapters : extractTableOfContents(text)
+
+    console.log("Importing with chapters:", chapters)
+    onImport(text, title || "제목 없음", chapters)
+    resetForm()
+  }
+
+  const resetForm = () => {
+    setTitle("")
+    setText("")
+    setUrl("")
+    setFile(null)
+    setError("")
+    setPreviewText("")
+    setSelectedSample(null)
+    setExtractedChapters([])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFile = e.dataTransfer.files[0]
+      setFile(droppedFile)
+      setTitle(droppedFile.name.split(".")[0])
+      setIsLoading(true)
+      setError("")
+      setExtractedChapters([])
+
+      try {
+        const { content: fileContent, chapters } = await readFile(droppedFile)
+        setText(fileContent)
+        setPreviewText(fileContent.substring(0, 300) + (fileContent.length > 300 ? "..." : ""))
+
+        if (chapters && chapters.length > 0) {
+          console.log("Extracted chapters from drop:", chapters)
+          setExtractedChapters(chapters)
+        } else {
+          // 목차가 추출되지 않았으면 텍스트에서 추출 시도
+          const extractedFromText = extractTableOfContents(fileContent)
+          console.log("Chapters extracted from text after drop:", extractedFromText)
+          setExtractedChapters(extractedFromText)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "파일을 읽는 중 오류가 발생했습니다.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  // Select a sample text
+  const handleSelectSample = (sample: { title: string; text: string; author?: string }) => {
+    setTitle(`${sample.title} - ${sample.author || ""}`)
+    setText(sample.text)
+    setPreviewText(sample.text.substring(0, 300) + (sample.text.length > 300 ? "..." : ""))
+    setSelectedSample(sample)
+
+    // 샘플 텍스트에서 목차 추출 시도
+    const chapters = extractTableOfContents(sample.text)
+    setExtractedChapters(chapters)
+  }
+
+  const handleImportText = (
+    importedText: string,
+    importedTitle: string,
+    importedChapters: { title: string; position: number; level: number; id: string }[],
+  ) => {
+    try {
+      // 텍스트에서 제목을 인식하고 포맷팅 적용
+      const formattedText = formatTextWithHeadings(importedText)
+
+      // 목차 위치 검증 및 수정 - 포맷팅된 텍스트 기반으로 위치 재계산
+      // const validatedChapters = validateAndFixChapterPositions(importedChapters, formattedText)
+
+      // 목차 위치 정보 로깅
+      console.log(
+        "Chapters after validation:",
+        importedChapters.map((c) => ({ title: c.title, position: c.position })),
+      )
+
+      // 상태 초기화
+      setText(formattedText)
+      setTitle(importedTitle)
+      // setCurrentPosition(0)
+      // setChapters(validatedChapters)
+      // setShowTextImport(false)
+
+      // 세션 저장 데이터 초기화 및 저장
+      const session = {
+        text: formattedText,
+        title: importedTitle,
+        position: 0,
+        chapters: importedChapters,
+      }
+      localStorage.setItem("typingSession", JSON.stringify(session))
+    } catch (error) {
+      console.error("Error formatting text:", error)
+      // 오류 발생 시 원본 텍스트 사용
+      // 기존 처리 로직...
+    }
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        if (!newOpen) resetForm()
+        onOpenChange(newOpen)
+      }}
+    >
+      <DialogContent className="sm:max-w-[700px] bg-background border-border shadow-lg p-0 overflow-hidden rounded-lg">
+        <div className="flex h-[600px]">
+          {/* Left sidebar - Import methods */}
+          <div className="w-[200px] border-r border-border/10 bg-muted/30 p-6 flex flex-col">
+            <DialogHeader className="mb-8 text-left">
+              <DialogTitle className="text-2xl font-extralight tracking-tight">텍스트</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-1 flex-1">
+              <Button
+                variant="ghost"
+                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
+                  importMethod === "samples"
+                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
+                    : "text-muted-foreground font-light hover:text-foreground"
+                }`}
+                onClick={() => setImportMethod("samples")}
+              >
+                <BookOpen
+                  className={`h-5 w-5 mr-3 ${importMethod === "samples" ? "text-foreground" : "text-muted-foreground/70"}`}
+                />
+                <span>한국 시</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
+                  importMethod === "file"
+                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
+                    : "text-muted-foreground font-light hover:text-foreground"
+                }`}
+                onClick={() => setImportMethod("file")}
+              >
+                <FileText
+                  className={`h-5 w-5 mr-3 ${importMethod === "file" ? "text-foreground" : "text-muted-foreground/70"}`}
+                />
+                <span>파일</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
+                  importMethod === "url"
+                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
+                    : "text-muted-foreground font-light hover:text-foreground"
+                }`}
+                onClick={() => setImportMethod("url")}
+              >
+                <Globe
+                  className={`h-5 w-5 mr-3 ${importMethod === "url" ? "text-foreground" : "text-muted-foreground/70"}`}
+                />
+                <span>URL</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
+                  importMethod === "paste"
+                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
+                    : "text-muted-foreground font-light hover:text-foreground"
+                }`}
+                onClick={() => setImportMethod("paste")}
+              >
+                <ClipboardCopy
+                  className={`h-5 w-5 mr-3 ${importMethod === "paste" ? "text-foreground" : "text-muted-foreground/70"}`}
+                />
+                <span>붙여넣기</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Main content area */}
+          <div className="flex-1 flex flex-col">
+            {/* Content area */}
+            <div className="flex-1 p-8 overflow-auto">
+              {/* Samples */}
+              {importMethod === "samples" && (
+                <div className="h-full flex flex-col">
+                  <h2 className="text-lg font-medium mb-6">한국 시 (Poems in Korean)</h2>
+
+                  {/* Sample list */}
+                  <ScrollArea className="flex-1 pr-4">
+                    <div className="space-y-4">
+                      {sampleTexts.poems.map((item, index) => (
+                        <div
+                          key={index}
+                          className={`group border border-border/10 rounded-md transition-all duration-200 ${
+                            selectedSample?.title === item.title
+                              ? "bg-accent/10 border-accent"
+                              : "hover:bg-accent/5 hover:border-accent/30"
+                          }`}
+                        >
+                          <div className="p-5">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <h3 className="font-normal text-lg leading-tight">{item.title}</h3>
+                                <p className="text-sm text-muted-foreground mt-1">{item.author}</p>
+                              </div>
+                              {selectedSample?.title === item.title && (
+                                <Check className="h-4 w-4 text-accent-foreground" />
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                              {item.text.split("\n")[0]}
+                            </p>
+                            <div className="flex justify-between items-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleSelectSample(item)}
+                                className="text-xs font-light px-0 hover:bg-transparent hover:text-foreground"
+                              >
+                                미리보기
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  onSelectSample(item.text, `${item.title} - ${item.author}`)
+                                  onOpenChange(false)
+                                }}
+                                className={`text-xs px-3 py-1 h-7 transition-all duration-200 ${
+                                  selectedSample?.title === item.title
+                                    ? "bg-accent/20 text-accent-foreground"
+                                    : "opacity-0 group-hover:opacity-100"
+                                }`}
+                              >
+                                선택 <ArrowRight className="ml-1 h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+
+              {/* File import */}
+              {importMethod === "file" && (
+                <div className="h-full flex flex-col">
+                  <div
+                    className={`border-2 border-dashed border-border/40 rounded-md p-10 text-center flex-1 flex flex-col items-center justify-center transition-all duration-200 ${
+                      file ? "bg-accent/5 border-accent/40" : "hover:bg-accent/5 hover:border-accent/30"
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  >
+                    {isLoading ? (
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="h-10 w-10 animate-spin text-accent mb-6" />
+                        <p className="text-sm mb-2">파일 처리 중...</p>
+                        {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
+                      </div>
+                    ) : file ? (
+                      <div className="flex flex-col items-center">
+                        <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center mb-6">
+                          <FileText className="h-8 w-8 text-accent-foreground" />
+                        </div>
+                        <p className="text-base font-medium mb-1">{file.name}</p>
+                        <p className="text-xs text-muted-foreground mb-6">{(file.size / 1024).toFixed(1)} KB</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setFile(null)
+                            setText("")
+                            setPreviewText("")
+                            setExtractedChapters([])
+                            if (fileInputRef.current) fileInputRef.current.value = ""
+                          }}
+                          className="text-xs border-border/30 hover:bg-accent/5 hover:text-foreground"
+                        >
+                          다른 파일 선택
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-6">
+                          <FileText className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <p className="text-base font-medium mb-4">파일을 끌어다 놓거나 선택하세요</p>
+                        <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+                          TXT, HTML, PDF, EPUB 파일을 지원합니다
+                        </p>
+                        <input
+                          ref={fileInputRef}
+                          id="file-upload"
+                          type="file"
+                          accept=".txt,.html,.htm,.pdf,.epub"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="text-sm border-border/30 hover:bg-accent/5 hover:text-foreground"
+                        >
+                          파일 선택
+                        </Button>
+                        {error && (
+                          <p className="text-xs text-error mt-4 p-2 bg-error/5 rounded-sm border border-error/20">
+                            {error}
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* URL import */}
+              {importMethod === "url" && (
+                <div className="h-full flex flex-col">
+                  <div className="space-y-4 mb-6">
+                    <Label htmlFor="url-input" className="text-sm font-medium">
+                      URL
+                    </Label>
+                    <div className="flex space-x-4">
+                      <Input
+                        id="url-input"
+                        placeholder="https://example.com/article.html"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        className="bg-background border-border/40 rounded-md focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          // 실제 앱에서는 URL에서 텍스트를 가져오는 기능 구현
+                          alert("URL 가져오기는 개발 중입니다.")
+                        }}
+                        className="rounded-md border-border/40 hover:bg-accent/5 hover:text-foreground hover:border-accent/40"
+                      >
+                        가져오기
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex items-center justify-center border-2 border-dashed border-border/30 rounded-md">
+                    <div className="text-center p-8">
+                      <Globe className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                      <p className="text-muted-foreground">URL에서 텍스트를 가져오면 여기에 표시됩니다</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Paste text */}
+              {importMethod === "paste" && (
+                <div className="h-full flex flex-col">
+                  <div className="space-y-4 flex-1">
+                    <Label htmlFor="paste-input" className="text-sm font-medium">
+                      텍스트
+                    </Label>
+                    <Textarea
+                      id="paste-input"
+                      placeholder="여기에 텍스트를 붙여넣으세요..."
+                      rows={15}
+                      value={text}
+                      onChange={handlePasteText}
+                      className="bg-background border-border/40 rounded-md focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent resize-none flex-1 min-h-[300px]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Preview and action area */}
+            <div className="border-t border-border/10 p-6 bg-muted/20">
+              {previewText ? (
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <Label htmlFor="title-input" className="text-sm font-medium">
+                      제목
+                    </Label>
+                    <div className="flex items-center space-x-4">
+                      <p className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-full">
+                        {text.length.toLocaleString()} 글자
+                      </p>
+                      <p className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-full">
+                        목차 {extractedChapters.length}개
+                      </p>
+                    </div>
+                  </div>
+                  <Input
+                    id="title-input"
+                    placeholder="문서 제목"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="bg-background border-border/40 rounded-md focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent mb-4"
+                  />
+
+                  <div className="bg-background border border-border/20 rounded-md p-4 max-h-[100px] overflow-auto text-sm text-muted-foreground">
+                    <p className="whitespace-pre-line">{previewText}</p>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="flex justify-end space-x-6">
+                <Button
+                  variant="ghost"
+                  onClick={() => onOpenChange(false)}
+                  className="text-sm font-light hover:bg-transparent hover:text-foreground"
+                >
+                  취소
+                </Button>
+
+                {previewText ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (importMethod === "samples" && selectedSample) {
+                        onSelectSample(selectedSample.text, `${selectedSample.title} - ${selectedSample.author || ""}`)
+                        onOpenChange(false)
+                      } else {
+                        handleImport()
+                      }
+                    }}
+                    disabled={!text || isLoading}
+                    className="rounded-md border-border/40 bg-accent/5 hover:bg-accent/10 hover:text-foreground hover:border-accent/40 transition-all duration-200"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        처리 중...
+                      </>
+                    ) : (
+                      <>
+                        가져오기 <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
