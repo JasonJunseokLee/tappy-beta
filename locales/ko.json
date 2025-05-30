@@ -1,0 +1,107 @@
+{
+  "common": {
+    "start": "시작하기",
+    "back": "뒤로",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "loading": "로딩 중...",
+    "search": "검색",
+    "darkMode": "다크 모드로 전환",
+    "lightMode": "라이트 모드로 전환",
+    "language": "언어",
+    "korean": "한국어",
+    "english": "영어"
+  },
+  "home": {
+    "title": "Tappy - 미니멀 타이핑 연습",
+    "subtitle": "하라 켄야의 디자인 원칙을 적용한 미니멀리스트 타이핑 연습 서비스",
+    "startTyping": "타이핑 시작하기",
+    "description": "수동적 읽기를 능동적 학습으로 변환하는 미니멀리스트 타이핑 연습",
+    "start": "시작하기",
+    "philosophy": {
+      "space": {
+        "title": "空白",
+        "description": "인터페이스는 공백을 부재가 아닌 가능성의 공간으로 받아듭니다."
+      },
+      "recognition": {
+        "title": "再認識",
+        "description": "능동적 타이핑을 통해 익숙한 텍스트가 낯설게 되고, 이를 통해 콘텐츠와 더 깊은 연결이 형성됩니다."
+      },
+      "mui": {
+        "title": "無印",
+        "description": "디자인은 불필요한 요소를 제거하여 타이핑이라는 본질적 행위에 집중할 수 있는 공간을 창조합니다."
+      }
+    },
+    "features": {
+      "title": "기능",
+      "minimal": "미니멀한 디자인",
+      "distraction": "방해 요소 없는 환경",
+      "statistics": "타이핑 통계",
+      "customization": "맞춤형 설정"
+    }
+  },
+  "practice": {
+    "title": "타이핑 연습",
+    "progress": "진행률",
+    "speed": "속도",
+    "accuracy": "정확도",
+    "wpm": "WPM",
+    "time": "시간",
+    "chapter": "챕터",
+    "textLoaded": "텍스트 로드됨",
+    "yes": "예",
+    "no": "아니오",
+    "importText": "텍스트 가져오기",
+    "settings": "설정",
+    "restart": "다시 시작",
+    "continue": "계속하기",
+    "finish": "완료",
+    "nextChapter": "다음 챕터",
+    "prevChapter": "이전 챕터"
+  },
+  "import": {
+    "title": "텍스트 가져오기",
+    "samples": "글귀",
+    "file": "파일",
+    "paste": "붙여넣기",
+    "preview": "미리보기",
+    "select": "선택",
+    "dropFile": "파일을 끌어다 놓거나 선택하세요",
+    "supportedFiles": "TXT, HTML, PDF, EPUB 파일을 지원합니다",
+    "selectFile": "파일 선택",
+    "pasteText": "텍스트를 붙여넣으세요",
+    "textTitle": "제목",
+    "import": "가져오기"
+  },
+  "settings": {
+    "title": "설정",
+    "appearance": "외관",
+    "theme": "테마",
+    "dark": "다크",
+    "light": "라이트",
+    "system": "시스템",
+    "fontSize": "글자 크기",
+    "small": "작게",
+    "medium": "중간",
+    "large": "크게",
+    "typing": "타이핑",
+    "sound": "소리",
+    "on": "켜기",
+    "off": "끄기",
+    "cursorStyle": "커서 스타일",
+    "block": "블록",
+    "line": "라인",
+    "underline": "밑줄",
+    "highlightStyle": "하이라이트 스타일",
+    "word": "단어",
+    "lineHighlight": "줄",
+    "none": "없음"
+  },
+  "errors": {
+    "fileReadError": "파일을 읽는 중 오류가 발생했습니다.",
+    "importError": "텍스트를 가져오는 중 오류가 발생했습니다.",
+    "unsupportedFile": "지원하지 않는 파일 형식입니다.",
+    "emptyText": "텍스트가 비어 있습니다."
+  }
+}

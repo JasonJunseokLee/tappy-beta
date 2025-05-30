@@ -1,9 +1,15 @@
+"use client"
+
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/language-toggle"
+import { useLanguage } from "@/contexts/language-context"
 
 export default function Home() {
+  // 언어 컨텍스트 사용
+  const { t } = useLanguage()
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground transition-theme">
       {/* 상단 네비게이션 - 미니멀 */}
@@ -14,7 +20,10 @@ export default function Home() {
               <span className="text-2xl font-light tracking-tight">泰披</span>
               <span className="ml-2 text-xl font-extralight tracking-wide">Tappy</span>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center space-x-2">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>
@@ -29,12 +38,12 @@ export default function Home() {
               <span className="text-4xl md:text-5xl block font-extralight tracking-wide">Tappy</span>
             </h1>
             <p className="text-xl font-light text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              수동적 읽기를 능동적 학습으로 변환하는 미니멀리스트 타이핑 연습
+              {t("home.description")}
             </p>
             <div className="pt-8">
               <Link href="/practice">
                 <Button className="rounded-none px-12 py-6 bg-foreground text-background hover:bg-foreground/90 transition-all duration-500">
-                  시작하기
+                  {t("home.start")}
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
@@ -48,21 +57,21 @@ export default function Home() {
         <section className="w-full py-24 border-t border-border/10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-24">
             <div className="space-y-6">
-              <h3 className="text-xl font-light">空白</h3>
+              <h3 className="text-xl font-light">{t("home.philosophy.space.title")}</h3>
               <p className="text-muted-foreground leading-relaxed font-light">
-                인터페이스는 공백을 부재가 아닌 가능성의 공간으로 받아들입니다.
+                {t("home.philosophy.space.description")}
               </p>
             </div>
             <div className="space-y-6">
-              <h3 className="text-xl font-light">再認識</h3>
+              <h3 className="text-xl font-light">{t("home.philosophy.recognition.title")}</h3>
               <p className="text-muted-foreground leading-relaxed font-light">
-                능동적 타이핑을 통해 익숙한 텍스트가 낯설게 되고, 이를 통해 콘텐츠와 더 깊은 연결이 형성됩니다.
+                {t("home.philosophy.recognition.description")}
               </p>
             </div>
             <div className="space-y-6">
-              <h3 className="text-xl font-light">無印</h3>
+              <h3 className="text-xl font-light">{t("home.philosophy.mui.title")}</h3>
               <p className="text-muted-foreground leading-relaxed font-light">
-                디자인은 불필요한 요소를 제거하여 타이핑이라는 본질적 행위에 집중할 수 있는 공간을 창조합니다.
+                {t("home.philosophy.mui.description")}
               </p>
             </div>
           </div>

@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { useLanguage } from "@/contexts/language-context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,76 +16,69 @@ import { formatTextWithHeadings } from "@/utils/text-formatter"
 interface TextImportDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onImport: (text: string, title: string, chapters: { title: string; position: number; level: number; id: string }[]) => void
+  onImport: (text: string, title: string, chapters: { title: string; position: number }[]) => void
   onSelectSample: (text: string, title: string) => void
 }
 
-export default function TextImportDialog({
-  open,
-  onOpenChange,
-  onImport,
-  onSelectSample,
-}: TextImportDialogProps) {
-  const { t, language } = useLanguage()
-  
-  // 샘플 텍스트를 위한 상태 관리
-  const [koreanPoems, setKoreanPoems] = useState<Array<{id: string; title: string; author: string; text: string}>>([]);
-  const [englishPoems, setEnglishPoems] = useState<Array<{id: string; title: string; author: string; text: string}>>([]);
-  const [samplesLoaded, setSamplesLoaded] = useState<boolean>(false);
-  
-  // 개별 JSON 파일에서 샘플 텍스트 로드
-  useEffect(() => {
-    const loadSampleTexts = async () => {
-      try {
-        // 한국어 시 파일 목록
-        const koPoems = ['azaleas', 'foreword', 'thatFlower', 'greenGrapes', 'wildflower'];
-        const loadedKoPoems = [];
-        
-        // 각 한국어 시 파일 로드
-        for (const poemId of koPoems) {
-          try {
-            const response = await fetch(`/samples/ko/poems/${poemId}.json`);
-            const poemData = await response.json();
-            loadedKoPoems.push(poemData);
-          } catch (err) {
-            console.error(`Error loading Korean poem ${poemId}:`, err);
-          }
-        }
-        
-        setKoreanPoems(loadedKoPoems);
-        
-        // 영어 시 파일 목록
-        const enPoems = ['road', 'fire', 'hope', 'stopping', 'dream'];
-        const loadedEnPoems = [];
-        
-        // 각 영어 시 파일 로드
-        for (const poemId of enPoems) {
-          try {
-            const response = await fetch(`/samples/en/poems/${poemId}.json`);
-            const poemData = await response.json();
-            loadedEnPoems.push(poemData);
-          } catch (err) {
-            console.error(`Error loading English poem ${poemId}:`, err);
-          }
-        }
-        
-        setEnglishPoems(loadedEnPoems);
-        setSamplesLoaded(true);
-      } catch (error) {
-        console.error('Error loading sample texts:', error);
-      }
-    };
-    
-    loadSampleTexts();
-  }, []);
-  
-  // 현재 언어에 따라 적절한 샘플 텍스트 선택
-  const sampleTexts = {
-    poems: language === "ko" ? koreanPoems : englishPoems
-  }
-  
+// 샘플 텍스트 데이터 - 한국 시
+const sampleTexts = {
+  poems: [
+    {
+      title: "진달래꽃",
+      author: "김소월",
+      text: "나 보기가 역겨워\n가실 때에는\n말없이 고이 보내 드리우리다\n\n영변에 약산\n진달래꽃\n아름 따다 가실 길에 뿌리우리다\n\n가시는 걸음 걸음\n놓인 그 꽃을\n사뿐히 즈려밟고 가시옵소서\n\n나 보기가 역겨워\n가실 때에는\n죽어도 아니 눈물 흘리우리다",
+    },
+    {
+      title: "서시",
+      author: "윤동주",
+      text: "죽는 날까지 하늘을 우러러\n한 점 부끄럼이 없기를,\n잎새에 이는 바람에도\n나는 괴로워했다.\n별을 노래하는 마음으로\n모든 죽어 가는 것을 사랑해야지\n그리고 나한테 주어진 길을\n걸어가야겠다.\n\n오늘 밤에도 별이 바람에 스치운다.",
+    },
+    {
+      title: "그 꽃",
+      author: "고은",
+      text: "내려갈 때 보았네\n올라갈 때 보지 못한\n그 꽃",
+    },
+    {
+      title: "청포도",
+      author: "이육사",
+      text: "내 고장 칠월은\n청포도가 익어 가는 시절.\n\n이 마을 전설이 주저리주저리 열리고\n먼 데 하늘이 꿈꾸며 알알이 들어와 박혀.\n\n하늘 밑 푸른 바다가 가슴을 열고\n흰 돛단배가 곱게 밀려서 오면\n\n내가 바라는 손님은 고달픈 몸으로\n청포(靑袍)를 입고 찾아온다고 했으니,\n\n내 그를 맞아 이 포도를 따 먹으면\n두 손은 함뿍 적셔도 좋으련\n\n아이야 우리 식탁엔 은쟁반에\n하이얀 모시 수건을 마련해 두렴.",
+    },
+    {
+      title: "풀꽃",
+      author: "나태주",
+      text: "자세히 보아야 예쁘다\n오래 보아야 사랑스럽다\n너도 그렇다",
+    },
+    {
+      title: "독을 차고",
+      author: "김영랑",
+      text: "나의 마음은 고요한 물결\n바람 한 점 불지 않아도\n소란스러운 파도가 이는 까닭은\n\n그것은 눈에 보이지 않는\n물속 깊은 곳에서\n무엇이 움직이는 까닭이다\n\n나의 마음은 고요한 바다\n나는 그 바다 밑을 헤엄쳐 다니는\n흉칙한 물고기",
+    },
+    {
+      title: "님의 침묵",
+      author: "한용운",
+      text: "님은 갔습니다. 아아, 사랑하는 나의 님은 갔습니다.\n푸른 산빛을 깨치고 단풍나무 숲을 향하여 난 작은 길을 걸어서, 차마 떨치고 갔습니다.\n황금의 꽃같이 굳고 빛나던 옛 맹세는 차디찬 티끌이 되어서 한숨의 미풍에 날아갔습니다.\n날카로운 첫키스의 추억은 나의 운명의 지침을 돌려놓고, 뒷걸음쳐서 사라졌습니다.\n\n나는 향기로운 님의 말소리에 귀먹고, 꽃다운 님의 얼굴에 눈멀었습니다.\n사랑도 사람의 일이라 만날 때에 미리 떠날 것을 염려하고 경계하지 아니한 것은 아니지만,\n이별은 뜻밖의 일이 되고, 놀란 가슴은 새로운 슬픔에 터집니다.\n\n그러나 이별을 쓸데없는 눈물의 원천을 만들고 마는 것은 스스로 사랑을 깨치는 것인 줄 아는 까닭에,\n걷잡을 수 없는 슬픔의 힘을 옮겨서 새 희망의 정수박이에 들어부었습니다.\n\n우리는 만날 때에 떠날 것을 염려하는 것과 같이 떠날 때에 다시 만날 것을 믿습니다.\n아아, 님은 갔지마는 나는 님을 보내지 아니하였습니다.\n제 곡조를 못 이기는 사랑의 노래는 님의 침묵을 휩싸고 돕니다.",
+    },
+    {
+      title: "나그네",
+      author: "박목월",
+      text: "강나루 건너서\n밀밭 길을\n\n구름에 달 가듯이\n가는 나그네\n\n길은 외줄기\n남도 삼백리\n\n술 익는 마을마다\n타는 저녁놀\n\n구름에 달 가듯이\n가는 나그네",
+    },
+    {
+      title: "나와 나타샤와 흰 당나귀",
+      author: "백석",
+      text: "눈은 내리고\n나는 흰 당나귀 타고\n\n흰 당나귀는\n그대가 타고\n\n눈길을 걷는다\n\n눈은 내리고\n\n흰 당나귀 타고 그대가 가는 곳\n\n동백꽃 피는 숲으로 가는 바닷길\n\n흰 당나귀 타고 가는 나와 그대는\n\n눈 속에서 만난 연인이 되고\n\n당나귀를 타고 산을 오르는 것은\n\n당나귀가 길을 알고 있는 까닭이다\n\n그대가 웃는 모습은\n\n눈이 와서 참 좋다",
+    },
+    {
+      title: "봄길",
+      author: "정호승",
+      text: "길이 끝나는 곳에서도\n길이 있다\n길이 끝나는 곳에서도\n길이 되는 사람이 있다\n\n스스로 봄길이 되어\n끝없이 걸어가는 사람이 있다\n\n강물은 흐르다가 바다에 이르러 멈추지만\n바다 그 너머 하늘 가에 닿아\n다시 비가 되어 내리고\n\n비는 내리다가 그치지만\n다시 땅속에 스며 샘물이 되어 솟는다\n\n사랑도 강물처럼 흐르고 비처럼 내리는 것이다\n\n길이 끝나는 곳에서도\n길이 되는 사람이 있다\n\n스스로 봄길이 되어\n끝없이 걸어가는 사람이 있다",
+    },
+  ],
+}
+
+export default function TextImportDialog({ open, onOpenChange, onImport, onSelectSample }: TextImportDialogProps) {
   // Primary state - what method is being used to import text
-  const [importMethod, setImportMethod] = useState<"samples" | "file" | "url" | "paste">("samples")
+  const [importMethod, setImportMethod] = useState<"samples" | "file" | "paste">("samples")
 
   // Content state
   const [title, setTitle] = useState<string>("")
@@ -167,7 +159,7 @@ export default function TextImportDialog({
           setExtractedChapters(extractedFromText)
         }
       } catch (err) {
-        setError(t("common.fileReadError"))
+        setError("파일을 읽는 중 오류가 발생했습니다.")
         console.error("Error reading file:", err)
       } finally {
         setIsLoading(false)
@@ -496,7 +488,7 @@ export default function TextImportDialog({
           setExtractedChapters(extractedFromText)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : t("common.fileReadError"))
+        setError(err instanceof Error ? err.message : "파일을 읽는 중 오류가 발생했습니다.")
       } finally {
         setIsLoading(false)
       }
@@ -560,268 +552,107 @@ export default function TextImportDialog({
       open={open}
       onOpenChange={(newOpen) => {
         if (!newOpen) resetForm()
-        onOpenChange(newOpen)
-      }}
-    >
-      <DialogContent className="sm:max-w-[700px] bg-background border-border shadow-lg p-0 overflow-hidden rounded-lg">
-        <div className="flex h-[600px]">
-          {/* Left sidebar - Import methods */}
-          <div className="w-[200px] border-r border-border/10 bg-muted/30 p-6 flex flex-col">
-            <DialogHeader className="mb-8 text-left">
-              <DialogTitle className="text-2xl font-extralight tracking-tight">{t("practice.importText")}</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-1 flex-1">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
-                  importMethod === "samples"
-                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
-                    : "text-muted-foreground font-light hover:text-foreground"
-                }`}
-                onClick={() => setImportMethod("samples")}
-              >
-                <BookOpen
-                  className={`h-5 w-5 mr-3 ${importMethod === "samples" ? "text-foreground" : "text-muted-foreground/70"}`}
-                />
-                <span>{t("practice.koreanPoems")}</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
-                  importMethod === "file"
-                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
-                    : "text-muted-foreground font-light hover:text-foreground"
-                }`}
-                onClick={() => setImportMethod("file")}
-              >
-                <FileText
-                  className={`h-5 w-5 mr-3 ${importMethod === "file" ? "text-foreground" : "text-muted-foreground/70"}`}
-                />
-                <span>{t("common.file")}</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
-                  importMethod === "url"
-                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
-                    : "text-muted-foreground font-light hover:text-foreground"
-                }`}
-                onClick={() => setImportMethod("url")}
-              >
-                <Globe
-                  className={`h-5 w-5 mr-3 ${importMethod === "url" ? "text-foreground" : "text-muted-foreground/70"}`}
-                />
-                <span>{t("common.url")}</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                className={`w-full justify-start px-2 py-6 rounded-md text-left transition-all duration-200 ${
-                  importMethod === "paste"
-                    ? "bg-background shadow-sm border-l-2 border-foreground pl-[6px] font-normal"
-                    : "text-muted-foreground font-light hover:text-foreground"
-                }`}
-                onClick={() => setImportMethod("paste")}
-              >
-                <ClipboardCopy
-                  className={`h-5 w-5 mr-3 ${importMethod === "paste" ? "text-foreground" : "text-muted-foreground/70"}`}
-                />
-                <span>{t("common.paste")}</span>
-              </Button>
             </div>
-          </div>
+          </button>
+          <button
+            className={`px-6 py-3 text-sm font-light tracking-wide ${importMethod === "file" ? "border-b border-foreground text-foreground" : "text-muted-foreground"}`}
+            onClick={() => setImportMethod("file")}
+          >
+            <div className="flex items-center">
+              <FileText className="h-4 w-4 mr-2" />
+              파일
+            </div>
+          </button>
+          <button
+            className={`px-6 py-3 text-sm font-light tracking-wide ${importMethod === "paste" ? "border-b border-foreground text-foreground" : "text-muted-foreground"}`}
+            onClick={() => setImportMethod("paste")}
+          >
+            <div className="flex items-center">
+              <ClipboardCopy className="h-4 w-4 mr-2" />
+              붙여넣기
+            </div>
+          </button>
+        </div>
 
-          {/* Main content area */}
-          <div className="flex-1 flex flex-col">
-            {/* Content area */}
-            <div className="flex-1 p-8 overflow-auto">
-              {/* Samples */}
-              {importMethod === "samples" && (
-                <div className="h-full flex flex-col">
-                  <h2 className="text-lg font-medium mb-6">{t("practice.koreanPoemsTitle")}</h2>
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col">
+          {/* Content area */}
+          <div className="flex-1 p-8 overflow-auto">
+            {/* Samples */}
+            {importMethod === "samples" && (
+              <div className="h-full flex flex-col">
+                <h2 className="text-lg font-medium mb-6">한국 시 (Poems in Korean)</h2>
 
-                  {/* Sample list */}
-                  <ScrollArea className="flex-1 pr-4">
-                    <div className="space-y-4">
-                      {sampleTexts.poems.map((item: { id: string; title: string; author: string; text: string }, index: number) => (
-                        <div
-                          key={index}
-                          className={`group border border-border/10 rounded-md transition-all duration-200 ${
-                            selectedSample?.title === item.title
-                              ? "bg-accent/10 border-accent"
-                              : "hover:bg-accent/5 hover:border-accent/30"
-                          }`}
-                        >
-                          <div className="p-5">
-                            <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <h3 className="font-normal text-lg leading-tight">{t(`practice.poem.${item.id}.title`)}</h3>
-                                  <p className="text-sm text-muted-foreground mt-1">{t(`practice.poem.${item.id}.author`)}</p>
-                                </div>
-                              {selectedSample?.title === item.title && (
-                                <Check className="h-4 w-4 text-accent-foreground" />
-                              )}
+                {/* Sample list */}
+                <ScrollArea className="flex-1 pr-4">
+                  <div className="space-y-4">
+                    {sampleTexts.poems.map((item, index) => (
+                      <div
+                        key={index}
+                        className={`group border border-border/10 rounded-md transition-all duration-200 ${
+                          selectedSample?.title === item.title
+                            ? "bg-accent/10 border-accent"
+                            : "hover:bg-accent/5 hover:border-accent/30"
+                        }`}
+                      >
+                        <div className="p-5">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="font-normal text-lg leading-tight">{item.title}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">{item.author}</p>
                             </div>
-                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
-                              {item.text.split("\n")[0]}
-                            </p>
-                            <div className="flex justify-between items-center">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleSelectSample(item)}
-                                className="text-xs font-light px-0 hover:bg-transparent hover:text-foreground"
-                              >
-                                {t("common.preview")}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  onSelectSample(item.text, `${item.title} - ${item.author}`)
-                                  onOpenChange(false)
-                                }}
-                                className={`text-xs px-3 py-1 h-7 transition-all duration-200 ${
-                                  selectedSample?.title === item.title
-                                    ? "bg-accent/20 text-accent-foreground"
-                                    : "opacity-0 group-hover:opacity-100"
-                                }`}
-                              >
-                                {t("common.select")} <ArrowRight className="ml-1 h-3 w-3" />
-                              </Button>
-                            </div>
+                            {selectedSample?.title === item.title && (
+                              <Check className="h-4 w-4 text-accent-foreground" />
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                            {item.text.split("\n")[0]}
+                          </p>
+                          <div className="flex justify-between items-center">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSelectSample(item)}
+                              className="text-xs font-light px-0 hover:bg-transparent hover:text-foreground"
+                            >
+                              미리보기
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                onSelectSample(item.text, `${item.title} - ${item.author}`)
+                                onOpenChange(false)
+                              }}
+                              className={`text-xs px-3 py-1 h-7 transition-all duration-200 ${
+                                selectedSample?.title === item.title
+                                  ? "bg-accent/20 text-accent-foreground"
+                                  : "opacity-0 group-hover:opacity-100"
+                              }`}
+                            >
+                              선택 <ArrowRight className="ml-1 h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-              )}
-
-              {/* File import */}
-              {importMethod === "file" && (
-                <div className="h-full flex flex-col">
-                  <div
-                    className={`border-2 border-dashed border-border/40 rounded-md p-10 text-center flex-1 flex flex-col items-center justify-center transition-all duration-200 ${
-                      file ? "bg-accent/5 border-accent/40" : "hover:bg-accent/5 hover:border-accent/30"
-                    }`}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  >
-                    {isLoading ? (
-                      <div className="flex flex-col items-center">
-                        <Loader2 className="h-10 w-10 animate-spin text-accent mb-6" />
-                        <p className="text-sm mb-2">{t("common.processingFile")}</p>
-                        {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
                       </div>
-                    ) : file ? (
-                      <div className="flex flex-col items-center">
-                        <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center mb-6">
-                          <FileText className="h-8 w-8 text-accent-foreground" />
-                        </div>
-                        <p className="text-base font-medium mb-1">{file.name}</p>
-                        <p className="text-xs text-muted-foreground mb-6">{(file.size / 1024).toFixed(1)} KB</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setFile(null)
-                            setText("")
-                            setPreviewText("")
-                            setExtractedChapters([])
-                            if (fileInputRef.current) fileInputRef.current.value = ""
-                          }}
-                          className="text-xs border-border/30 hover:bg-accent/5 hover:text-foreground"
-                        >
-                          {t("common.selectAnotherFile")}
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-6">
-                          <FileText className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                        <p className="text-base font-medium mb-4">{t("common.dragAndDropFile")}</p>
-                        <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-                          {t("common.supportedFileTypes")}
-                        </p>
-                        <input
-                          ref={fileInputRef}
-                          id="file-upload"
-                          type="file"
-                          accept=".txt,.html,.htm,.pdf,.epub"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="text-sm border-border/30 hover:bg-accent/5 hover:text-foreground"
-                        >
-                          {t("common.selectFile")}
-                        </Button>
-                        {error && (
-                          <p className="text-xs text-error mt-4 p-2 bg-error/5 rounded-sm border border-error/20">
-                            {error}
-                          </p>
-                        )}
-                      </>
+                    ))}
                     )}
                   </div>
                 </div>
               )}
 
-              {/* URL import */}
-              {importMethod === "url" && (
-                <div className="h-full flex flex-col">
-                  <div className="space-y-4 mb-6">
-                    <Label htmlFor="url-input" className="text-sm font-medium">
-                      URL
-                    </Label>
-                    <div className="flex space-x-4">
-                      <Input
-                        id="url-input"
-                        placeholder="https://example.com/article.html"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        className="bg-background border-border/40 rounded-md focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent"
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          // 실제 앱에서는 URL에서 텍스트를 가져오는 기능 구현
-                          alert(t("common.urlImportInDevelopment"))
-                        }}
-                        className="rounded-md border-border/40 hover:bg-accent/5 hover:text-foreground hover:border-accent/40"
-                      >
-                        {t("common.import")}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex items-center justify-center border-2 border-dashed border-border/30 rounded-md">
-                    <div className="text-center p-8">
-                      <Globe className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-                      <p className="text-muted-foreground">{t("common.urlImportPreview")}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* URL import 기능 제거됨 */}
 
               {/* Paste text */}
               {importMethod === "paste" && (
                 <div className="h-full flex flex-col">
                   <div className="space-y-4 flex-1">
                     <Label htmlFor="paste-input" className="text-sm font-medium">
-                      {t("common.text")}
+                      텍스트
                     </Label>
                     <Textarea
                       id="paste-input"
-                      placeholder={t("common.pasteTextHere")}
+                      placeholder="여기에 텍스트를 붙여넣으세요..."
                       rows={15}
                       value={text}
                       onChange={handlePasteText}
@@ -854,22 +685,22 @@ export default function TextImportDialog({
                     placeholder="문서 제목"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="bg-background border-border/40 rounded-md focus-visible:ring-1 focus-visible:ring-accent focus-visible:border-accent mb-4"
+                    className="bg-background border-border/20 rounded-none focus-visible:ring-0 focus-visible:border-foreground mb-4 font-light"
                   />
 
-                  <div className="bg-background border border-border/20 rounded-md p-4 max-h-[100px] overflow-auto text-sm text-muted-foreground">
-                    <p className="whitespace-pre-line">{previewText}</p>
+                  <div className="bg-background border border-border/10 p-4 max-h-[100px] overflow-auto text-sm text-muted-foreground">
+                    <p className="whitespace-pre-line font-light">{previewText}</p>
                   </div>
                 </div>
               ) : null}
 
-              <div className="flex justify-end space-x-6">
+              <div className="flex justify-end space-x-8">
                 <Button
                   variant="ghost"
                   onClick={() => onOpenChange(false)}
-                  className="text-sm font-light hover:bg-transparent hover:text-foreground"
+                  className="text-sm font-extralight hover:bg-transparent hover:text-foreground"
                 >
-                  {t("common.cancel")}
+                  취소
                 </Button>
 
                 {previewText ? (
@@ -884,16 +715,16 @@ export default function TextImportDialog({
                       }
                     }}
                     disabled={!text || isLoading}
-                    className="rounded-md border-border/40 bg-accent/5 hover:bg-accent/10 hover:text-foreground hover:border-accent/40 transition-all duration-200"
+                    className="rounded-none border-foreground/20 hover:bg-transparent hover:text-foreground hover:border-foreground/50 transition-all duration-300 px-8 font-light"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t("common.processing")}
+                        처리 중...
                       </>
                     ) : (
                       <>
-                        {t("common.import")} <ArrowRight className="ml-2 h-4 w-4" />
+                        가져오기 <ArrowRight className="ml-2 h-4 w-4" />
                       </>
                     )}
                   </Button>

@@ -1,0 +1,107 @@
+{
+  "common": {
+    "start": "Start",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "search": "Search",
+    "darkMode": "Switch to Dark Mode",
+    "lightMode": "Switch to Light Mode",
+    "language": "Language",
+    "korean": "Korean",
+    "english": "English"
+  },
+  "home": {
+    "title": "Tappy - Minimal Typing Practice",
+    "subtitle": "A minimalist typing practice service applying Hara Kenya's design principles",
+    "startTyping": "Start Typing",
+    "description": "A minimalist typing practice that transforms passive reading into active learning",
+    "start": "Get Started",
+    "philosophy": {
+      "space": {
+        "title": "空白 (Space)",
+        "description": "Interface embraces whitespace not as absence, but as a space of possibility."
+      },
+      "recognition": {
+        "title": "再認識 (Re-recognition)",
+        "description": "Through active typing, familiar text becomes unfamiliar, creating a deeper connection with content."
+      },
+      "mui": {
+        "title": "無印 (Muji)",
+        "description": "Design removes unnecessary elements to create a space that focuses on the essential act of typing."
+      }
+    },
+    "features": {
+      "title": "Features",
+      "minimal": "Minimal Design",
+      "distraction": "Distraction-free Environment",
+      "statistics": "Typing Statistics",
+      "customization": "Customization"
+    }
+  },
+  "practice": {
+    "title": "Typing Practice",
+    "progress": "Progress",
+    "speed": "Speed",
+    "accuracy": "Accuracy",
+    "wpm": "WPM",
+    "time": "Time",
+    "chapter": "Chapter",
+    "textLoaded": "Text Loaded",
+    "yes": "Yes",
+    "no": "No",
+    "importText": "Import Text",
+    "settings": "Settings",
+    "restart": "Restart",
+    "continue": "Continue",
+    "finish": "Finish",
+    "nextChapter": "Next Chapter",
+    "prevChapter": "Previous Chapter"
+  },
+  "import": {
+    "title": "Import Text",
+    "samples": "Quotes",
+    "file": "File",
+    "paste": "Paste",
+    "preview": "Preview",
+    "select": "Select",
+    "dropFile": "Drop a file or select",
+    "supportedFiles": "Supports TXT, HTML, PDF, EPUB files",
+    "selectFile": "Select File",
+    "pasteText": "Paste your text here",
+    "textTitle": "Title",
+    "import": "Import"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "system": "System",
+    "fontSize": "Font Size",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "typing": "Typing",
+    "sound": "Sound",
+    "on": "On",
+    "off": "Off",
+    "cursorStyle": "Cursor Style",
+    "block": "Block",
+    "line": "Line",
+    "underline": "Underline",
+    "highlightStyle": "Highlight Style",
+    "word": "Word",
+    "lineHighlight": "Line",
+    "none": "None"
+  },
+  "errors": {
+    "fileReadError": "An error occurred while reading the file.",
+    "importError": "An error occurred while importing text.",
+    "unsupportedFile": "Unsupported file format.",
+    "emptyText": "Text is empty."
+  }
+}

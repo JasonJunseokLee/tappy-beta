@@ -164,6 +164,8 @@ const translations = {
       "tableOfContents": "목차",
       "koreanPoems": "한국 시",
       "koreanPoemsTitle": "한국 시 (Poems in Korean)",
+      "englishPoems": "영어 시",
+      "englishPoemsTitle": "영어 시 (Poems in English)",
       "poem": {
         "azaleas": {
           "title": "진달래꽃",
@@ -375,7 +377,34 @@ const translations = {
       "tableOfContents": "Table of Contents",
       "koreanPoems": "Korean Poems",
       "koreanPoemsTitle": "Korean Poems",
+      "englishPoems": "English Poems",
+      "englishPoemsTitle": "English Poems",
       "poem": {
+        "road": {
+          "title": "The Road Not Taken",
+          "author": "Robert Frost",
+          "text": "Two roads diverged in a yellow wood,\nAnd sorry I could not travel both\nAnd be one traveler, long I stood\nAnd looked down one as far as I could\nTo where it bent in the undergrowth;\n\nThen took the other, as just as fair,\nAnd having perhaps the better claim,\nBecause it was grassy and wanted wear;\nThough as for that the passing there\nHad worn them really about the same,\n\nAnd both that morning equally lay\nIn leaves no step had trodden black.\nOh, I kept the first for another day!\nYet knowing how way leads on to way,\nI doubted if I should ever come back.\n\nI shall be telling this with a sigh\nSomewhere ages and ages hence:\nTwo roads diverged in a wood, and I—\nI took the one less traveled by,\nAnd that has made all the difference."
+        },
+        "fire": {
+          "title": "Fire and Ice",
+          "author": "Robert Frost",
+          "text": "Some say the world will end in fire,\nSome say in ice.\nFrom what I've tasted of desire\nI hold with those who favor fire.\nBut if it had to perish twice,\nI think I know enough of hate\nTo say that for destruction ice\nIs also great\nAnd would suffice."
+        },
+        "hope": {
+          "title": "Hope is the thing with feathers",
+          "author": "Emily Dickinson",
+          "text": "Hope is the thing with feathers\nThat perches in the soul,\nAnd sings the tune without the words,\nAnd never stops at all,\n\nAnd sweetest in the gale is heard;\nAnd sore must be the storm\nThat could abash the little bird\nThat kept so many warm.\n\nI've heard it in the chillest land,\nAnd on the strangest sea;\nYet, never, in extremity,\nIt asked a crumb of me."
+        },
+        "stopping": {
+          "title": "Stopping by Woods on a Snowy Evening",
+          "author": "Robert Frost",
+          "text": "Whose woods these are I think I know.\nHis house is in the village though;\nHe will not see me stopping here\nTo watch his woods fill up with snow.\n\nMy little horse must think it queer\nTo stop without a farmhouse near\nBetween the woods and frozen lake\nThe darkest evening of the year.\n\nHe gives his harness bells a shake\nTo ask if there is some mistake.\nThe only other sound's the sweep\nOf easy wind and downy flake.\n\nThe woods are lovely, dark and deep,\nBut I have promises to keep,\nAnd miles to go before I sleep,\nAnd miles to go before I sleep."
+        },
+        "dream": {
+          "title": "A Dream Within A Dream",
+          "author": "Edgar Allan Poe",
+          "text": "Take this kiss upon the brow!\nAnd, in parting from you now,\nThus much let me avow —\nYou are not wrong, who deem\nThat my days have been a dream;\nYet if hope has flown away\nIn a night, or in a day,\nIn a vision, or in none,\nIs it therefore the less gone?\nAll that we see or seem\nIs but a dream within a dream.\n\nI stand amid the roar\nOf a surf-tormented shore,\nAnd I hold within my hand\nGrains of the golden sand —\nHow few! yet how they creep\nThrough my fingers to the deep,\nWhile I weep — while I weep!\nO God! Can I not grasp\nThem with a tighter clasp?\nO God! can I not save\nOne from the pitiless wave?\nIs all that we see or seem\nBut a dream within a dream?"
+        },
         "azaleas": {
           "title": "Azaleas",
           "author": "Kim Sowol",

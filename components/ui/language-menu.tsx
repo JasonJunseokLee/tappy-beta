@@ -46,14 +46,13 @@ export function LanguageMenu() {
     <div className="relative" ref={menuRef}>
       <Button
         variant="ghost"
-        size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="rounded-full h-9 w-9 transition-all duration-500"
+        className="rounded-md px-3 py-2 transition-all duration-300 flex items-center gap-2"
         aria-label={t("common.language")}
         aria-expanded={isOpen}
       >
-        <Globe className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all duration-500" />
-        <span className="sr-only">{t("common.language")}</span>
+        <Globe className="h-[1.2rem] w-[1.2rem]" />
+        <span>{language === "ko" ? "한국어" : "English"}</span>
       </Button>
 
       {isOpen && (
@@ -64,7 +63,7 @@ export function LanguageMenu() {
               onClick={() => handleLanguageChange("ko")}
               type="button"
             >
-              <span>{t("common.korean")}</span>
+              <span>한국어</span>
               {language === "ko" && <Check className="h-4 w-4 ml-2" />}
             </button>
             <button
@@ -72,7 +71,7 @@ export function LanguageMenu() {
               onClick={() => handleLanguageChange("en")}
               type="button"
             >
-              <span>{t("common.english")}</span>
+              <span>English</span>
               {language === "en" && <Check className="h-4 w-4 ml-2" />}
             </button>
           </div>

@@ -3,6 +3,7 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { ThemeProvider } from "@/contexts/theme-context"
 import { TypingSettingsProvider } from "@/contexts/typing-settings-context"
+import { LanguageProvider } from "@/contexts/language-context"
 
 export const metadata: Metadata = {
   title: "Transcribe - 미니멀 타이핑 연습",
@@ -26,7 +27,9 @@ export default function RootLayout({
       </head>
       <body className="theme-transition">
         <ThemeProvider>
-          <TypingSettingsProvider>{children}</TypingSettingsProvider>
+          <LanguageProvider>
+            <TypingSettingsProvider>{children}</TypingSettingsProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
