@@ -162,10 +162,10 @@ const translations = {
       "title": "타이핑 연습",
       "importText": "텍스트 가져오기",
       "tableOfContents": "목차",
-      "koreanPoems": "한국 시",
-      "koreanPoemsTitle": "한국 시 (Poems in Korean)",
-      "englishPoems": "영어 시",
-      "englishPoemsTitle": "영어 시 (Poems in English)",
+      "koreanPoems": "한국 글",
+      "koreanPoemsTitle": "한국 글 (Korean Texts)",
+      "englishPoems": "영어 글",
+      "englishPoemsTitle": "영어 글 (English Texts)",
       "poem": {
         "azaleas": {
           "title": "진달래꽃",
@@ -375,7 +375,7 @@ const translations = {
       "title": "Typing Practice",
       "importText": "Import Text",
       "tableOfContents": "Table of Contents",
-      "koreanPoems": "Korean Poems",
+      "koreanPoems": "Short Passages",
       "koreanPoemsTitle": "Korean Poems",
       "englishPoems": "English Poems",
       "englishPoemsTitle": "English Poems",

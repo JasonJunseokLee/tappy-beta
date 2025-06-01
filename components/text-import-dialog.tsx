@@ -38,35 +38,41 @@ export default function TextImportDialog({
   useEffect(() => {
     const loadSampleTexts = async () => {
       try {
-        // 한국어 시 파일 목록
-        const koPoems = ['azaleas', 'foreword', 'thatFlower', 'greenGrapes', 'wildflower'];
+        // 한국어 글 파일 목록 - 실제 존재하는 파일만 포함
+        const koTexts = [
+          'azaleas', 'foreword', 'thatFlower', 'greenGrapes', 'wildflower',
+          'simcheong_jeon', 'a_lucky_day', 'wings', 'buckwheat_season'
+        ];
         const loadedKoPoems = [];
         
-        // 각 한국어 시 파일 로드
-        for (const poemId of koPoems) {
+        // 각 한국어 글 파일 로드
+        for (const textId of koTexts) {
           try {
-            const response = await fetch(`/samples/ko/poems/${poemId}.json`);
-            const poemData = await response.json();
-            loadedKoPoems.push(poemData);
+            const response = await fetch(`/samples/ko/texts/${textId}.json`);
+            const textData = await response.json();
+            loadedKoPoems.push(textData);
           } catch (err) {
-            console.error(`Error loading Korean poem ${poemId}:`, err);
+            console.error(`Error loading Korean text ${textId}:`, err);
           }
         }
         
         setKoreanPoems(loadedKoPoems);
         
-        // 영어 시 파일 목록
-        const enPoems = ['road', 'fire', 'hope', 'stopping', 'dream'];
+        // 영어 글 파일 목록
+        const enTexts = [
+          'road', 'fire', 'hope', 'stopping', 'dream',
+          'the_raven', 'to_be_or_not_to_be', 'gettysburg_address'
+        ];
         const loadedEnPoems = [];
         
-        // 각 영어 시 파일 로드
-        for (const poemId of enPoems) {
+        // 각 영어 글 파일 로드
+        for (const textId of enTexts) {
           try {
-            const response = await fetch(`/samples/en/poems/${poemId}.json`);
-            const poemData = await response.json();
-            loadedEnPoems.push(poemData);
+            const response = await fetch(`/samples/en/texts/${textId}.json`);
+            const textData = await response.json();
+            loadedEnPoems.push(textData);
           } catch (err) {
-            console.error(`Error loading English poem ${poemId}:`, err);
+            console.error(`Error loading English text ${textId}:`, err);
           }
         }
         
@@ -584,7 +590,7 @@ export default function TextImportDialog({
                 <BookOpen
                   className={`h-5 w-5 mr-3 ${importMethod === "samples" ? "text-foreground" : "text-muted-foreground/70"}`}
                 />
-                <span>{t("practice.koreanPoems")}</span>
+                <span>{t("import.samples")}</span>
               </Button>
 
               <Button
@@ -641,7 +647,7 @@ export default function TextImportDialog({
               {/* Samples */}
               {importMethod === "samples" && (
                 <div className="h-full flex flex-col">
-                  <h2 className="text-lg font-medium mb-6">{t("practice.koreanPoemsTitle")}</h2>
+                  <h2 className="text-lg font-medium mb-6">{t("import.samples")}</h2>
 
                   {/* Sample list */}
                   <ScrollArea className="flex-1 pr-4">
@@ -658,8 +664,8 @@ export default function TextImportDialog({
                           <div className="p-5">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
-                                  <h3 className="font-normal text-lg leading-tight">{t(`practice.poem.${item.id}.title`)}</h3>
-                                  <p className="text-sm text-muted-foreground mt-1">{t(`practice.poem.${item.id}.author`)}</p>
+                                  <h3 className="font-normal text-lg leading-tight">{item.title}</h3>
+                                  <p className="text-sm text-muted-foreground mt-1">{item.author}</p>
                                 </div>
                               {selectedSample?.title === item.title && (
                                 <Check className="h-4 w-4 text-accent-foreground" />

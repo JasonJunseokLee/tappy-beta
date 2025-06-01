@@ -75,7 +75,7 @@ export default function PracticePage() {
           if (session.text && (!session.chapters || session.chapters.length === 0)) {
             const defaultChapter: ChapterInfo = {
               id: "default",
-              title: "전체 텍스트",
+              title: t("practice.defaultChapter"),
               position: 0,
               level: 1,
               content: session.text,
@@ -210,7 +210,7 @@ export default function PracticePage() {
       // 샘플 텍스트에 대한 기본 챕터 생성
       const defaultChapter: ChapterInfo = {
         id: "default",
-        title: "전체 텍스트",
+        title: t("practice.defaultChapter"),
         position: 0,
         level: 1,
         content: sampleText,
@@ -490,7 +490,7 @@ export default function PracticePage() {
     if (text && (!chapters || chapters.length === 0) && isTextLoaded) {
       const defaultChapter: ChapterInfo = {
         id: "default",
-        title: "전체 텍스트",
+        title: t("practice.defaultChapter"),
         position: 0,
         level: 1,
         content: text,

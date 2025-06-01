@@ -320,7 +320,7 @@ export default function ChapterBasedTypingInterface({
                     onClick={navigateToPrevChapter}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    이전 챕터
+                    {t("practice.prevChapter")}
                   </Button>
                   <Button
                     variant="outline"
@@ -328,7 +328,7 @@ export default function ChapterBasedTypingInterface({
                     onClick={navigateToNextChapter}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    다음 챕터
+                    {t("practice.nextChapter")}
                   </Button>
                 </div>
               </div>
@@ -554,7 +554,7 @@ export default function ChapterBasedTypingInterface({
                   variant="default"
                   className="rounded-md transition-colors"
                 >
-                  다음 챕터 <ChevronRight className="ml-2 h-4 w-4" />
+                  {t("practice.nextChapter")} <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
