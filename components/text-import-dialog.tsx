@@ -260,25 +260,6 @@ export default function TextImportDialog({
                     // 배열 형태의 목적지에서 페이지 참조 추출
                     const pageRef = dest[0]
                     if (pageRef && typeof pageRef === "object" && "num" in pageRef) {
-                      position = (pageRef as any).num * 1000
-                    }
-                  }
-
-                  const chapter = {
-                    id: Math.random().toString(36).substring(2, 9),
-                    title: item.title,
-                    position,
-                    level,
-                  }
-
-                  if (item.items && item.items.length > 0) {
-                    chapter.children = item.items.map((child: any) => processOutlineItem(child, level + 1))
-                  }
-
-                  return chapter
-                }
-
-                outline.forEach((item: any) => {
                   chapters.push(processOutlineItem(item))
                 })
               }
