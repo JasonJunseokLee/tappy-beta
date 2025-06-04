@@ -449,7 +449,7 @@ export function adjustChapterPositions(chapters: ChapterInfo[], text: string): C
   // 디버깅 정보 출력
   console.log(
     "Adjusted chapter positions:",
-    fixedChapters.map((c) => ({ title: c.title, position: c.position })),
+    fixedChapters.map((c: ChapterInfo) => ({ title: c.title, position: c.position })),
   )
 
   return fixedChapters
