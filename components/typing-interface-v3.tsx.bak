@@ -12,7 +12,7 @@ interface TypingInterfaceProps {
   onPositionChange: (position: number) => void
 }
 
-export default function TypingInterfaceV3({ text, currentPosition, onPositionChange }: TypingInterfaceProps) {
+export default function TypingInterfaceV2({ text, currentPosition, onPositionChange }: TypingInterfaceProps) {
   // Core state
   const [startTime, setStartTime] = useState<number | null>(null)
   const [wpm, setWpm] = useState<number>(0)
@@ -21,26 +21,38 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
   const [isCompleted, setIsCompleted] = useState<boolean>(false)
   const [showStats, setShowStats] = useState<boolean>(false)
   const [typedText, setTypedText] = useState<string>("")
-  const [currentLine, setCurrentLine] = useState<number>(0)
-  const [lines, setLines] = useState<string[]>([])
+  const [visibleTextStart, setVisibleTextStart] = useState<number>(0)
+  const [visibleTextEnd, setVisibleTextEnd] = useState<number>(500) // Show first 500 chars initially
 
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const textDisplayRef = useRef<HTMLDivElement>(null)
 
-  // Split text into lines on mount
-  useEffect(() => {
-    const textLines = text.split("\n").filter((line) => line.trim() !== "")
-    setLines(textLines)
-  }, [text])
-
-  // Focus textarea on mount and when line changes
+  // Focus textarea on mount
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.focus()
     }
-  }, [currentLine])
+  }, [])
+
+  // Update visible text range when current position changes
+  useEffect(() => {
+    const windowSize = 500 // Characters to show before and after current position
+    const newStart = Math.max(0, currentPosition - windowSize / 2)
+    const newEnd = Math.min(text.length, currentPosition + windowSize / 2)
+
+    setVisibleTextStart(newStart)
+    setVisibleTextEnd(newEnd)
+
+    // Scroll the text display to keep the current position in view
+    if (textDisplayRef.current) {
+      const currentPosElement = textDisplayRef.current.querySelector(".current-position")
+      if (currentPosElement) {
+        currentPosElement.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+    }
+  }, [currentPosition, text])
 
   // Calculate statistics
   useEffect(() => {
@@ -60,7 +72,6 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const inputValue = e.target.value
-    setTypedText(inputValue)
 
     // Start timer on first input
     if (startTime === null && inputValue.length > 0) {
@@ -68,54 +79,21 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
     }
 
     // Calculate errors by comparing with expected text
-    const currentLineText = lines[currentLine]
     let errors = 0
     for (let i = 0; i < inputValue.length; i++) {
-      if (i >= currentLineText.length || inputValue[i] !== currentLineText[i]) {
+      if (i >= text.length || inputValue[i] !== text[i]) {
         errors++
       }
     }
+    setErrorCount(errors)
 
-    // Update error count
-    setErrorCount(
-      (prev) =>
-        prev +
-        errors -
-        (typedText.length > 0 ? countErrors(typedText, currentLineText.substring(0, typedText.length)) : 0),
-    )
-  }
+    // Update typed text and position
+    setTypedText(inputValue)
+    onPositionChange(inputValue.length)
 
-  // Count errors in a string
-  const countErrors = (input: string, expected: string) => {
-    let errors = 0
-    for (let i = 0; i < input.length; i++) {
-      if (i >= expected.length || input[i] !== expected[i]) {
-        errors++
-      }
-    }
-    return errors
-  }
-
-  // Handle key press
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // If Enter is pressed and input matches current line, move to next line
-    if (e.key === "Enter") {
-      e.preventDefault()
-
-      const currentLineText = lines[currentLine]
-
-      // Calculate position change
-      const positionChange = currentLineText.length + 1 // +1 for newline
-
-      // Move to next line
-      if (currentLine < lines.length - 1) {
-        setCurrentLine(currentLine + 1)
-        setTypedText("")
-        onPositionChange(currentPosition + positionChange)
-      } else {
-        // Completed all lines
-        setIsCompleted(true)
-      }
+    // Check if completed
+    if (inputValue.length >= text.length) {
+      setIsCompleted(true)
     }
   }
 
@@ -126,7 +104,6 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
     setAccuracy(100)
     setErrorCount(0)
     setIsCompleted(false)
-    setCurrentLine(0)
     setTypedText("")
     onPositionChange(0)
 
@@ -136,8 +113,8 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
     }
   }
 
-  // Calculate overall progress percentage
-  const progress = (currentLine / lines.length) * 100
+  // Calculate progress percentage
+  const progress = (currentPosition / text.length) * 100
 
   // Handle container click to focus textarea
   const handleContainerClick = () => {
@@ -146,10 +123,44 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
     }
   }
 
+  // Render text with highlighting for current position
+  const renderText = () => {
+    // Get visible portion of text
+    const visibleText = text.substring(visibleTextStart, visibleTextEnd)
+
+    // Create an array of character spans with appropriate styling
+    return visibleText.split("").map((char, index) => {
+      const absoluteIndex = visibleTextStart + index
+
+      // Determine character status and styling
+      let className = "text-gray-300" // Not yet typed
+
+      if (absoluteIndex < typedText.length) {
+        // Character has been typed
+        className = typedText[absoluteIndex] === char ? "text-black" : "text-red-500"
+      }
+
+      // Current position
+      if (absoluteIndex === currentPosition) {
+        return (
+          <span key={index} className={`${className} current-position bg-gray-100`}>
+            {char === " " ? "\u00A0" : char}
+          </span>
+        )
+      }
+
+      return (
+        <span key={index} className={className}>
+          {char === " " ? "\u00A0" : char}
+        </span>
+      )
+    })
+  }
+
   return (
     <div
       ref={containerRef}
-      className="min-h-[80vh] flex flex-col items-center justify-center bg-white w-full"
+      className="min-h-[80vh] flex flex-col items-center justify-center bg-white"
       onClick={handleContainerClick}
     >
       <div className="w-full max-w-3xl mx-auto px-4">
@@ -188,59 +199,28 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
         </div>
 
         {/* Main typing area */}
-        <div className="space-y-8 mb-8 w-full overflow-x-hidden">
-          {/* Previous lines (completed) */}
-          <div className="space-y-4 w-full">
-            {lines.slice(0, currentLine).map((line, index) => (
-              <div key={index} className="font-mono text-lg leading-relaxed text-gray-400 w-full whitespace-pre-wrap break-words">
-                {line}
-              </div>
-            ))}
+        <div className="space-y-8 mb-8">
+          {/* Text display with highlighting */}
+          <div
+            ref={textDisplayRef}
+            className="font-mono text-lg leading-relaxed whitespace-pre-wrap break-all overflow-hidden"
+            style={{ height: "300px", overflowY: "auto" }}
+          >
+            {renderText()}
           </div>
 
-          {/* Current line to type */}
-          {!isCompleted && lines[currentLine] && (
-            <div className="space-y-4 w-full">
-              <div className="font-mono text-lg leading-relaxed w-full whitespace-pre-wrap break-words">
-                {lines[currentLine].split("").map((char, index) => {
-                  let className = "text-gray-300" // Not yet typed
-
-                  if (index < typedText.length) {
-                    // Character has been typed
-                    className = typedText[index] === char ? "text-black" : "text-red-500"
-                  }
-
-                  return (
-                    <span key={index} className={className}>
-                      {char}
-                    </span>
-                  )
-                })}
-              </div>
-
-              <div className="relative">
-                <textarea
-                  ref={textareaRef}
-                  className="w-full py-2 px-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-none"
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyPress}
-                  value={typedText}
-                  autoFocus
-                  rows={1}
-                  placeholder="Type the line above, then press Enter..."
-                />
-                <div className="absolute right-3 top-2 text-xs text-gray-400">Press Enter when finished</div>
-              </div>
-            </div>
-          )}
-
-          {/* Upcoming lines */}
-          <div className="space-y-4 w-full">
-            {lines.slice(currentLine + 1, currentLine + 4).map((line, index) => (
-              <div key={index} className="font-mono text-lg leading-relaxed text-gray-200 w-full whitespace-pre-wrap break-words">
-                {line}
-              </div>
-            ))}
+          {/* Hidden textarea for capturing input */}
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              className="w-full py-2 px-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-none"
+              onChange={handleInputChange}
+              value={typedText}
+              disabled={isCompleted}
+              autoFocus
+              rows={3}
+              placeholder="Start typing here..."
+            />
           </div>
         </div>
 
@@ -261,14 +241,12 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
             <h3 className="text-sm font-medium mb-4">Detailed Statistics</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs text-gray-400 mb-1">Lines Completed</p>
-                <p className="text-lg font-light">
-                  {currentLine} / {lines.length}
-                </p>
-              </div>
-              <div>
                 <p className="text-xs text-gray-400 mb-1">Words</p>
                 <p className="text-lg font-light">{Math.round(currentPosition / 5)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Characters</p>
+                <p className="text-lg font-light">{currentPosition}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-1">Errors</p>

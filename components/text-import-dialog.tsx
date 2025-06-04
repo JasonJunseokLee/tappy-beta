@@ -38,13 +38,10 @@ export default function TextImportDialog({
   useEffect(() => {
     const loadSampleTexts = async () => {
       try {
-        // 한국어 글 파일 목록
+        // 한국어 글 파일 목록 - 실제 존재하는 파일만 포함
         const koTexts = [
           'azaleas', 'foreword', 'thatFlower', 'greenGrapes', 'wildflower',
-          'hong_gildong_jeon', 'chunhyang_jeon', 'simcheong_jeon', 'heungbu_nolbu_jeon',
-          'janghwa_hongryeon_jeon', 'guunmong', 'onyeong_jeon', 'sassinamjeonggi',
-          'byuljubujeon', 'nanjung_ilgi', 'mokminsimseo', 'eouyadam', 'hoejaejip',
-          'woo_eon_yeojam', 'bom_bom', 'buckwheat_season', 'a_lucky_day', 'sonagi', 'wings'
+          'simcheong_jeon', 'a_lucky_day', 'wings', 'buckwheat_season'
         ];
         const loadedKoPoems = [];
         
@@ -594,7 +591,7 @@ export default function TextImportDialog({
                 <BookOpen
                   className={`h-5 w-5 mr-3 ${importMethod === "samples" ? "text-foreground" : "text-muted-foreground/70"}`}
                 />
-                <span>{t("practice.koreanPoems")}</span>
+                <span>{language === "ko" ? "글귀" : "Short Passages"}</span>
               </Button>
 
               <Button
@@ -651,7 +648,7 @@ export default function TextImportDialog({
               {/* Samples */}
               {importMethod === "samples" && (
                 <div className="h-full flex flex-col">
-                  <h2 className="text-lg font-medium mb-6">{t("practice.koreanPoemsTitle")}</h2>
+                  <h2 className="text-lg font-medium mb-6">{language === "ko" ? "글귀" : "Short Passages"}</h2>
 
                   {/* Sample list */}
                   <ScrollArea className="flex-1 pr-4">
@@ -668,8 +665,8 @@ export default function TextImportDialog({
                           <div className="p-5">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
-                                  <h3 className="font-normal text-lg leading-tight">{t(`practice.poem.${item.id}.title`)}</h3>
-                                  <p className="text-sm text-muted-foreground mt-1">{t(`practice.poem.${item.id}.author`)}</p>
+                                  <h3 className="font-normal text-lg leading-tight">{item.title}</h3>
+                                  <p className="text-sm text-muted-foreground mt-1">{item.author}</p>
                                 </div>
                               {selectedSample?.title === item.title && (
                                 <Check className="h-4 w-4 text-accent-foreground" />
@@ -724,7 +721,7 @@ export default function TextImportDialog({
                     {isLoading ? (
                       <div className="flex flex-col items-center">
                         <Loader2 className="h-10 w-10 animate-spin text-accent mb-6" />
-                        <p className="text-sm mb-2">{t("common.processingFile")}</p>
+                        <p className="text-sm mb-2">{language === "ko" ? "파일 처리 중..." : "Processing file..."}</p>
                         {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
                       </div>
                     ) : file ? (
@@ -746,7 +743,7 @@ export default function TextImportDialog({
                           }}
                           className="text-xs border-border/30 hover:bg-accent/5 hover:text-foreground"
                         >
-                          {t("common.selectAnotherFile")}
+                          {language === "ko" ? "다른 파일 선택" : "Select Another File"}
                         </Button>
                       </div>
                     ) : (
@@ -754,9 +751,9 @@ export default function TextImportDialog({
                         <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-6">
                           <FileText className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <p className="text-base font-medium mb-4">{t("common.dragAndDropFile")}</p>
+                        <p className="text-base font-medium mb-4">{language === "ko" ? "파일을 끌어다 놓거나 선택하세요" : "Drag and drop a file or select one"}</p>
                         <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-                          {t("common.supportedFileTypes")}
+                          {language === "ko" ? "TXT, HTML, PDF, EPUB 파일을 지원합니다" : "TXT, HTML, PDF, EPUB files are supported"}
                         </p>
                         <input
                           ref={fileInputRef}
@@ -772,7 +769,7 @@ export default function TextImportDialog({
                           onClick={() => fileInputRef.current?.click()}
                           className="text-sm border-border/30 hover:bg-accent/5 hover:text-foreground"
                         >
-                          {t("common.selectFile")}
+                          {language === "ko" ? "파일 선택" : "Select File"}
                         </Button>
                         {error && (
                           <p className="text-xs text-error mt-4 p-2 bg-error/5 rounded-sm border border-error/20">

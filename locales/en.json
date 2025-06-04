@@ -58,7 +58,107 @@
     "continue": "Continue",
     "finish": "Finish",
     "nextChapter": "Next Chapter",
-    "prevChapter": "Previous Chapter"
+    "prevChapter": "Previous Chapter",
+    "koreanPoems": "Korean Literature",
+    "koreanPoemsTitle": "Korean Literary Works",
+    "poem": {
+      "azaleas": {
+        "title": "Azaleas",
+        "author": "Kim Sowol"
+      },
+      "foreword": {
+        "title": "Foreword",
+        "author": "Yun Dong-ju"
+      },
+      "thatFlower": {
+        "title": "That Flower",
+        "author": "Kim Chun-su"
+      },
+      "greenGrapes": {
+        "title": "Green Grapes",
+        "author": "Yi Yuk-sa"
+      },
+      "wildflower": {
+        "title": "Wildflower",
+        "author": "Na Tae-ju"
+      },
+      "simcheong_jeon": {
+        "title": "The Story of Sim Cheong",
+        "author": "Anonymous"
+      },
+      "a_lucky_day": {
+        "title": "A Lucky Day",
+        "author": "Hyun Jin-geon"
+      },
+      "wings": {
+        "title": "Wings",
+        "author": "Yi Sang"
+      },
+      "buckwheat_season": {
+        "title": "When Buckwheat Flowers Bloom",
+        "author": "Lee Hyo-seok"
+      },
+      "hong_gildong_jeon": {
+        "title": "The Tale of Hong Gil-dong",
+        "author": "Heo Gyun"
+      },
+      "chunhyang_jeon": {
+        "title": "The Tale of Chunhyang",
+        "author": "Anonymous"
+      },
+      "heungbu_nolbu_jeon": {
+        "title": "The Tale of Heungbu and Nolbu",
+        "author": "Anonymous"
+      },
+      "janghwa_hongryeon_jeon": {
+        "title": "The Tale of Janghwa and Hongryeon",
+        "author": "Anonymous"
+      },
+      "guunmong": {
+        "title": "The Cloud Dream of the Nine",
+        "author": "Kim Man-jung"
+      },
+      "onyeong_jeon": {
+        "title": "The Tale of Onyeong",
+        "author": "Anonymous"
+      },
+      "sassinamjeonggi": {
+        "title": "The Record of Lady Sa's Journey to the South",
+        "author": "Kim Man-jung"
+      },
+      "byuljubujeon": {
+        "title": "The Tale of the Rabbit",
+        "author": "Anonymous"
+      },
+      "nanjung_ilgi": {
+        "title": "War Diary",
+        "author": "Yi Sun-sin"
+      },
+      "mokminsimseo": {
+        "title": "Admonitions on Governing the People",
+        "author": "Jeong Yak-yong"
+      },
+      "eouyadam": {
+        "title": "Eou Yadam",
+        "author": "Yu Mong-in"
+      },
+      "hoejaejip": {
+        "title": "Collected Works of Hoejae",
+        "author": "Yi Eon-jeok"
+      },
+      "woo_eon_yeojam": {
+        "title": "Tales of Wisdom",
+        "author": "Anonymous"
+      },
+      "bom_bom": {
+        "title": "Spring, Spring",
+        "author": "Kim Yu-jeong"
+      },
+      "sonagi": {
+        "title": "Shower",
+        "author": "Hwang Sun-won"
+      }
+    }
   },
   "import": {
     "title": "Import Text",

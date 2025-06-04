@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Volume2, VolumeX } from "lucide-react"
 import type { ChapterInfo } from "@/types/typing"
@@ -30,7 +30,7 @@ export default function ChapterBasedTypingInterface({
   const { t } = useLanguage()
   // UI state
   const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
-  const [fixedWidth, setFixedWidth] = useState<number>(1200) // 기본 고정 너비
+  const [fixedWidth, setFixedWidth] = useState<number>(() => Math.min(Math.max(window.innerWidth * 0.95, 1000), 1800)) // 기본 고정 너비 (initial)
   const [displayLines, setDisplayLines] = useState<string[]>([])
   const [isInitialized, setIsInitialized] = useState<boolean>(false)
   const [isProcessingText, setIsProcessingText] = useState<boolean>(false)
@@ -44,8 +44,8 @@ export default function ChapterBasedTypingInterface({
   // 화면 크기에 따라 고정 너비 설정
   useEffect(() => {
     const updateFixedWidth = () => {
-      // 화면 너비의 90%로 설정하되, 최소 800px, 최대 1600px로 제한
-      const newWidth = Math.min(Math.max(window.innerWidth * 0.9, 800), 1600)
+      // 화면 너비의 95%로 설정하되, 최소 1000px, 최대 1800px로 제한
+      const newWidth = Math.min(Math.max(window.innerWidth * 0.95, 1000), 1800)
       setFixedWidth(newWidth)
     }
 
@@ -58,7 +58,7 @@ export default function ChapterBasedTypingInterface({
   }, [])
 
   // 챕터 내용을 줄로 분할 - 개선된 버전
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Wait for the component to be mounted to measure text width
     if (!measureRef.current || !textDisplayRef.current || fixedWidth === 0) return
 
@@ -77,8 +77,8 @@ export default function ChapterBasedTypingInterface({
       try {
         console.log(`챕터 "${chapter.title}" 처리 시작, 내용 길이: ${chapter.content?.length || 0}`)
 
-        // 고정 너비 사용 (여백 고려)
-        const containerWidth = fixedWidth - 40
+        // 실제 텍스트 디스플레이 컨테이너 너비 사용
+        const containerWidth = textDisplayRef.current?.offsetWidth || fixedWidth - 40
 
         // 측정 요소 생성 (동일한 스타일링 적용)
         const measureElement = measureRef.current
@@ -282,7 +282,7 @@ export default function ChapterBasedTypingInterface({
 
           {/* 텍스트 처리 중 로딩 표시 */}
           {isProcessingText && (
-            <div className="h-[400px] flex items-center justify-center">
+            <div className="h-[400px] flex items-center justify-center" ref={textDisplayRef}>
               <div className="text-center">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mb-4"></div>
                 <p className="text-muted-foreground">텍스트 처리 중...</p>
@@ -339,14 +339,14 @@ export default function ChapterBasedTypingInterface({
           {!isProcessingText && !processingError && (
             <div className="h-[400px] overflow-hidden relative space-y-10 mb-8 w-full" ref={textDisplayRef}>
               {/* Typing interface with guide text and typed text */}
-              <div className="typing-guide">
+              <div className="typing-guide whitespace-pre-wrap break-words">
                 {getVisibleLines().map(({ text: line, index: lineIndex }) => {
                   const isCurrentLine = lineIndex === typing.currentLineIndex
                   const isPastLine = lineIndex < typing.currentLineIndex
                   const isFutureLine = lineIndex > typing.currentLineIndex
 
                   return (
-                    <div key={lineIndex} className={`mb-6 ${isPastLine ? "opacity-50" : ""}`}>
+                    <div key={lineIndex} className={`mb-6 w-full ${isPastLine ? "opacity-50" : ""}`}>
                       {/* Guide text */}
                       <TypingLine
                         line={line}

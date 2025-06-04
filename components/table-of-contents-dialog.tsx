@@ -39,7 +39,7 @@ export default function TableOfContentsDialog({
   onSaveSession,
   isRecalculatingToc,
 }: TableOfContentsDialogProps) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({})
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [filteredChapters, setFilteredChapters] = useState<ChapterInfo[]>([])
@@ -215,14 +215,14 @@ export default function TableOfContentsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>{t("common.tableOfContents")}</DialogTitle>
+          <DialogTitle>{language === "ko" ? "목차" : "Table of Contents"}</DialogTitle>
         </DialogHeader>
 
         {invalidPositions && (
           <Alert variant="destructive" className="mb-4 py-2">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              {t("common.invalidTocPositions")}
+              {language === "ko" ? "목차 위치가 유효하지 않습니다. 목차를 재계산하세요." : "Invalid TOC positions. Please recalculate the table of contents."}
             </AlertDescription>
           </Alert>
         )}
@@ -230,7 +230,7 @@ export default function TableOfContentsDialog({
         <div className="relative mb-4">
           <Input
             ref={searchInputRef}
-            placeholder={t("common.searchToc")}
+            placeholder={language === "ko" ? "목차 검색..." : "Search table of contents..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pr-8"
@@ -249,14 +249,14 @@ export default function TableOfContentsDialog({
             </div>
           </ScrollArea>
         ) : (
-          <div className="py-4 text-center text-muted-foreground">{t("common.noTocFound")}</div>
+          <div className="py-4 text-center text-muted-foreground">{language === "ko" ? "목차를 찾을 수 없습니다" : "No table of contents found"}</div>
         )}
 
         {/* 완료 상태 표시 */}
         {chapters.length > 0 && (
           <div className="mt-4 pt-4 border-t border-border">
             <div className="flex justify-between text-sm">
-              <span>완료된 챕터:</span>
+              <span>{language === "ko" ? "완료된 챕터:" : "Completed Chapters:"}</span>
               <span className="font-medium">
                 {completedChapters.length}/{flattenTableOfContents(chapters).length}
               </span>
@@ -272,35 +272,35 @@ export default function TableOfContentsDialog({
           </div>
         )}
         {/* 기능 버튼 영역 */}
-        <div className="mt-4 pt-4 border-t border-border flex justify-between">
-          <div className="flex space-x-2">
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex flex-wrap gap-2 justify-center">
             {onRecalculateToc && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onRecalculateToc}
                 disabled={isRecalculatingToc}
-                className="text-xs"
+                className="text-xs px-3"
               >
-                <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isRecalculatingToc ? "animate-spin" : ""}`} />
-                {t("common.recalculateToc")}
+                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRecalculatingToc ? "animate-spin" : ""}`} />
+                {language === "ko" ? "목차 재계산" : "Recalculate TOC"}
               </Button>
             )}
 
             {onFormatText && (
-              <Button variant="outline" size="sm" onClick={onFormatText} className="text-xs">
-                <FileText className="h-3.5 w-3.5 mr-1" />
-                {t("common.textFormatting")}
+              <Button variant="outline" size="sm" onClick={onFormatText} className="text-xs px-3">
+                <FileText className="h-3.5 w-3.5 mr-1.5" />
+                {language === "ko" ? "텍스트 포맷팅" : "Text Formatting"}
+              </Button>
+            )}
+            
+            {onSaveSession && (
+              <Button variant="outline" size="sm" onClick={onSaveSession} className="text-xs px-3">
+                <Save className="h-3.5 w-3.5 mr-1.5" />
+                {language === "ko" ? "저장" : "Save"}
               </Button>
             )}
           </div>
-
-          {onSaveSession && (
-            <Button variant="outline" size="sm" onClick={onSaveSession} className="text-xs">
-              <Save className="h-3.5 w-3.5 mr-1" />
-              {t("common.save")}
-            </Button>
-          )}
         </div>
       </DialogContent>
     </Dialog>

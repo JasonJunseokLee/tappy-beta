@@ -58,7 +58,107 @@
     "continue": "계속하기",
     "finish": "완료",
     "nextChapter": "다음 챕터",
-    "prevChapter": "이전 챕터"
+    "prevChapter": "이전 챕터",
+    "koreanPoems": "한국 문학",
+    "koreanPoemsTitle": "한국 문학 작품",
+    "poem": {
+      "azaleas": {
+        "title": "진달래꽃",
+        "author": "김소월"
+      },
+      "foreword": {
+        "title": "서시",
+        "author": "윤동주"
+      },
+      "thatFlower": {
+        "title": "그 꽃",
+        "author": "김춘수"
+      },
+      "greenGrapes": {
+        "title": "청포도",
+        "author": "이육사"
+      },
+      "wildflower": {
+        "title": "들꽃",
+        "author": "나태주"
+      },
+      "simcheong_jeon": {
+        "title": "심청전",
+        "author": "작자미상"
+      },
+      "a_lucky_day": {
+        "title": "운수 좋은 날",
+        "author": "현진건"
+      },
+      "wings": {
+        "title": "날개",
+        "author": "이상"
+      },
+      "buckwheat_season": {
+        "title": "메밀꽃 필 무렵",
+        "author": "이효석"
+      },
+      "hong_gildong_jeon": {
+        "title": "홍길동전",
+        "author": "허균"
+      },
+      "chunhyang_jeon": {
+        "title": "춘향전",
+        "author": "작자미상"
+      },
+      "heungbu_nolbu_jeon": {
+        "title": "흥부놀부전",
+        "author": "작자미상"
+      },
+      "janghwa_hongryeon_jeon": {
+        "title": "장화홍련전",
+        "author": "작자미상"
+      },
+      "guunmong": {
+        "title": "구운몽",
+        "author": "김만중"
+      },
+      "onyeong_jeon": {
+        "title": "온영전",
+        "author": "작자미상"
+      },
+      "sassinamjeonggi": {
+        "title": "사씨남정기",
+        "author": "김만중"
+      },
+      "byuljubujeon": {
+        "title": "별주부전",
+        "author": "작자미상"
+      },
+      "nanjung_ilgi": {
+        "title": "난중일기",
+        "author": "이순신"
+      },
+      "mokminsimseo": {
+        "title": "목민심서",
+        "author": "정약용"
+      },
+      "eouyadam": {
+        "title": "어우야담",
+        "author": "유몽인"
+      },
+      "hoejaejip": {
+        "title": "회재집",
+        "author": "이언적"
+      },
+      "woo_eon_yeojam": {
+        "title": "우언여담",
+        "author": "작자미상"
+      },
+      "bom_bom": {
+        "title": "봄봄",
+        "author": "김유정"
+      },
+      "sonagi": {
+        "title": "소나기",
+        "author": "황순원"
+      }
+    }
   },
   "import": {
     "title": "텍스트 가져오기",

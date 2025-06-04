@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/language-context"
 
 export default function Home() {
   // 언어 컨텍스트 사용
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground transition-theme">
       {/* 상단 네비게이션 - 미니멀 */}
@@ -38,12 +38,12 @@ export default function Home() {
               <span className="text-4xl md:text-5xl block font-extralight tracking-wide">Tappy</span>
             </h1>
             <p className="text-xl font-light text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              {t("home.description")}
+              {language === "ko" ? "수동적 읽기를 능동적 학습으로 변환하는 미니멀리스트 타이핑 연습" : "A minimalist typing practice that transforms passive reading into active learning"}
             </p>
             <div className="pt-8">
               <Link href="/practice">
                 <Button className="rounded-none px-12 py-6 bg-foreground text-background hover:bg-foreground/90 transition-all duration-500">
-                  {t("home.start")}
+                  {language === "ko" ? "시작하기" : "Get Started"}
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
@@ -57,21 +57,21 @@ export default function Home() {
         <section className="w-full py-24 border-t border-border/10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-24">
             <div className="space-y-6">
-              <h3 className="text-xl font-light">{t("home.philosophy.space.title")}</h3>
+              <h3 className="text-xl font-light">{language === "ko" ? "空白" : "空白 (Space)"}</h3>
               <p className="text-muted-foreground leading-relaxed font-light">
-                {t("home.philosophy.space.description")}
+                {language === "ko" ? "인터페이스는 공백을 부재가 아닌 가능성의 공간으로 받아듭니다." : "Interface embraces whitespace not as absence, but as a space of possibility."}
               </p>
             </div>
             <div className="space-y-6">
-              <h3 className="text-xl font-light">{t("home.philosophy.recognition.title")}</h3>
+              <h3 className="text-xl font-light">{language === "ko" ? "再認識" : "再認識 (Re-recognition)"}</h3>
               <p className="text-muted-foreground leading-relaxed font-light">
-                {t("home.philosophy.recognition.description")}
+                {language === "ko" ? "능동적 타이핑을 통해 익숙한 텍스트가 낯설게 느껴지며, 콘텐츠와 더 깊은 연결을 만듭니다." : "Through active typing, familiar text becomes unfamiliar, creating a deeper connection with content."}
               </p>
             </div>
             <div className="space-y-6">
-              <h3 className="text-xl font-light">{t("home.philosophy.mui.title")}</h3>
+              <h3 className="text-xl font-light">{language === "ko" ? "無印" : "無印 (Muji)"}</h3>
               <p className="text-muted-foreground leading-relaxed font-light">
-                {t("home.philosophy.mui.description")}
+                {language === "ko" ? "디자인은 불필요한 요소를 제거하여 타이핑이라는 본질적 행위에 집중하는 공간을 만듭니다." : "Design removes unnecessary elements to create a space that focuses on the essential act of typing."}
               </p>
             </div>
           </div>
