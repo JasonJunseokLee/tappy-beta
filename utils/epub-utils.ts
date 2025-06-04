@@ -374,8 +374,8 @@ export function adjustChapterPositions(chapters: ChapterInfo[], text: string): C
   // 일치하는 줄을 찾지 못한 챕터들에 대해 균등 분배
   const chaptersWithoutPosition = flatChapters.filter((c) => c.position === undefined || c.position < 0)
   if (chaptersWithoutPosition.length > 0) {
-    // 챕터 위치 조정 함수 (재귀)
-    function adjustPositions(items: ChapterInfo[], startIdx: number, endIdx: number): void {
+    // 챕터 위치 조정 함수 (재귀) - 화살표 함수로 변경하여 ES5 호환성 확보
+    const adjustPositions = (items: ChapterInfo[], startIdx: number, endIdx: number): void => {
       const itemCount = items.length
 
       if (itemCount === 0) return
