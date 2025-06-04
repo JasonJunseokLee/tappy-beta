@@ -38,10 +38,13 @@ export default function TextImportDialog({
   useEffect(() => {
     const loadSampleTexts = async () => {
       try {
-        // 한국어 글 파일 목록 - 실제 존재하는 파일만 포함
+        // 한국어 글 파일 목록
         const koTexts = [
           'azaleas', 'foreword', 'thatFlower', 'greenGrapes', 'wildflower',
-          'simcheong_jeon', 'a_lucky_day', 'wings', 'buckwheat_season'
+          'hong_gildong_jeon', 'chunhyang_jeon', 'simcheong_jeon', 'heungbu_nolbu_jeon',
+          'janghwa_hongryeon_jeon', 'guunmong', 'onyeong_jeon', 'sassinamjeonggi',
+          'byuljubujeon', 'nanjung_ilgi', 'mokminsimseo', 'eouyadam', 'hoejaejip',
+          'woo_eon_yeojam', 'bom_bom', 'buckwheat_season', 'a_lucky_day', 'sonagi', 'wings'
         ];
         const loadedKoPoems = [];
         
@@ -260,6 +263,26 @@ export default function TextImportDialog({
                     // 배열 형태의 목적지에서 페이지 참조 추출
                     const pageRef = dest[0]
                     if (pageRef && typeof pageRef === "object" && "num" in pageRef) {
+                      position = (pageRef as any).num * 1000
+                    }
+                  }
+
+                  const chapter = {
+                    id: Math.random().toString(36).substring(2, 9),
+                    title: item.title,
+                    position,
+                    level,
+                    children: [] as any[],
+                  }
+
+                  if (item.items && item.items.length > 0) {
+                    chapter.children = item.items.map((child: any) => processOutlineItem(child, level + 1))
+                  }
+
+                  return chapter
+                }
+
+                outline.forEach((item: any) => {
                   chapters.push(processOutlineItem(item))
                 })
               }
@@ -571,7 +594,7 @@ export default function TextImportDialog({
                 <BookOpen
                   className={`h-5 w-5 mr-3 ${importMethod === "samples" ? "text-foreground" : "text-muted-foreground/70"}`}
                 />
-                <span>{t("import.samples")}</span>
+                <span>{t("practice.koreanPoems")}</span>
               </Button>
 
               <Button
@@ -628,7 +651,7 @@ export default function TextImportDialog({
               {/* Samples */}
               {importMethod === "samples" && (
                 <div className="h-full flex flex-col">
-                  <h2 className="text-lg font-medium mb-6">{t("import.samples")}</h2>
+                  <h2 className="text-lg font-medium mb-6">{t("practice.koreanPoemsTitle")}</h2>
 
                   {/* Sample list */}
                   <ScrollArea className="flex-1 pr-4">
@@ -645,8 +668,8 @@ export default function TextImportDialog({
                           <div className="p-5">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
-                                  <h3 className="font-normal text-lg leading-tight">{item.title}</h3>
-                                  <p className="text-sm text-muted-foreground mt-1">{item.author}</p>
+                                  <h3 className="font-normal text-lg leading-tight">{t(`practice.poem.${item.id}.title`)}</h3>
+                                  <p className="text-sm text-muted-foreground mt-1">{t(`practice.poem.${item.id}.author`)}</p>
                                 </div>
                               {selectedSample?.title === item.title && (
                                 <Check className="h-4 w-4 text-accent-foreground" />
