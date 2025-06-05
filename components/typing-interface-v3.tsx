@@ -25,7 +25,7 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
   const [lines, setLines] = useState<string[]>([])
 
   // Refs
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const textareaRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const textDisplayRef = useRef<HTMLDivElement>(null)
 
@@ -58,7 +58,7 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
   }, [currentPosition, startTime, errorCount])
 
   // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value
     setTypedText(inputValue)
 
@@ -66,23 +66,6 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
     if (startTime === null && inputValue.length > 0) {
       setStartTime(Date.now())
     }
-
-    // Calculate errors by comparing with expected text
-    const currentLineText = lines[currentLine]
-    let errors = 0
-    for (let i = 0; i < inputValue.length; i++) {
-      if (i >= currentLineText.length || inputValue[i] !== currentLineText[i]) {
-        errors++
-      }
-    }
-
-    // Update error count
-    setErrorCount(
-      (prev) =>
-        prev +
-        errors -
-        (typedText.length > 0 ? countErrors(typedText, currentLineText.substring(0, typedText.length)) : 0),
-    )
   }
 
   // Count errors in a string
@@ -97,12 +80,16 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
   }
 
   // Handle key press
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // If Enter is pressed and input matches current line, move to next line
     if (e.key === "Enter") {
       e.preventDefault()
 
       const currentLineText = lines[currentLine]
+
+      // Count errors for completed line
+      const errorsInLine = countErrors(typedText, currentLineText)
+      setErrorCount((prev) => prev + errorsInLine)
 
       // Calculate position change
       const positionChange = currentLineText.length + 1 // +1 for newline
@@ -219,14 +206,14 @@ export default function TypingInterfaceV3({ text, currentPosition, onPositionCha
               </div>
 
               <div className="relative">
-                <textarea
+                <input
                   ref={textareaRef}
-                  className="w-full py-2 px-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                  type="text"
+                  className="w-full py-2 px-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   value={typedText}
                   autoFocus
-                  rows={1}
                   placeholder="Type the line above, then press Enter..."
                 />
                 <div className="absolute right-3 top-2 text-xs text-gray-400">Press Enter when finished</div>

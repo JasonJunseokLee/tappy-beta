@@ -63,16 +63,18 @@ export default function ChapterPracticePage() {
     }
   }, [])
 
-  // 현재 챕터 가져오기
-  const currentChapter =
-    chapters.length > 0 && currentChapterId
-      ? findCurrentChapter(
-          0,
-          chapters.filter((c) => c.id === currentChapterId),
-        )
-      : chapters.length > 0
-        ? chapters[0]
-        : null
+  // 현재 챕터 가져오기 (id 기반 탐색)
+  const findChapterById = (items: ChapterInfo[], id: string): ChapterInfo | null => {
+    for (const item of items) {
+      if (item.id === id) return item
+      if (item.children) {
+        const found = findChapterById(item.children, id)
+        if (found) return found
+      }
+    }
+    return null
+  }
+  const currentChapter = findChapterById(chapters, currentChapterId) || (chapters.length > 0 ? chapters[0] : null)
 
   // 챕터 완료 처리
   const handleChapterComplete = useCallback(
@@ -235,7 +237,7 @@ export default function ChapterPracticePage() {
     })
   }
 
-  // Keyboard shortcuts - 변경된 부분
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl/Cmd + S: Save session

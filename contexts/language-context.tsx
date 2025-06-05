@@ -12,8 +12,8 @@ type LanguageContextType = {
   t: (key: string) => string
 }
 
-// 기본값으로 한국어 설정
-const defaultLanguage: Language = "ko"
+// 기본값으로 한국어 설정 (외부 주입 가능)
+export const defaultLanguage: Language = "ko"
 
 // 언어 컨텍스트 생성
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -474,9 +474,12 @@ const translations = {
 }
 
 // 언어 제공자 컴포넌트
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
+export function LanguageProvider({
+  children,
+  initialLanguage,
+}: { children: React.ReactNode; initialLanguage?: Language }) {
   // 언어 상태 관리
-  const [language, setLanguageState] = useState<Language>(defaultLanguage)
+  const [language, setLanguageState] = useState<Language>(initialLanguage ?? defaultLanguage)
   const [mounted, setMounted] = useState(false)
 
   // 클라이언트 사이드에서만 실행되는 코드

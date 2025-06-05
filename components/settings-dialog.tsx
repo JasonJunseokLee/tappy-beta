@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useTypingSettings } from "@/contexts/typing-settings-context"
 import { useTypingSound } from "@/hooks/use-typing-sound"
 import { useLanguage } from "@/contexts/language-context"
-import { Volume2, Keyboard } from "lucide-react"
+import { Volume2 } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 interface SettingsDialogProps {
@@ -32,32 +32,6 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
         </DialogHeader>
 
         <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
-          <div className="space-y-2">
-            <Label htmlFor="font-size">{t("common.fontSize")}: {settings.fontSize}px</Label>
-            <Slider
-              id="font-size"
-              min={12}
-              max={28}
-              step={1}
-              value={[settings.fontSize]}
-              onValueChange={(value) => updateSettings({ fontSize: value[0] })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="font-family">{t("common.font")}</Label>
-            <Select value={settings.fontFamily} onValueChange={(value) => updateSettings({ fontFamily: value })}>
-              <SelectTrigger id="font-family">
-                <SelectValue placeholder={t("common.selectFont")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mono">{t("common.fontMonospace")}</SelectItem>
-                <SelectItem value="sans">{t("common.fontSansSerif")}</SelectItem>
-                <SelectItem value="serif">{t("common.fontSerif")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="theme">{t("common.theme")}</Label>
             <Select
@@ -85,12 +59,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
           </div>
 
           {/* 소리 설정 섹션 */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="text-sm font-medium flex items-center gap-2">
-              <Volume2 className="h-4 w-4" />
-              {t("common.soundSettings")}
-            </h3>
-
+          <div className="space-y-4 pt-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="sound-enabled">{t("common.typingSound")}</Label>
               <Switch
@@ -147,6 +116,8 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
               </div>
             )}
           </div>
+          {/* 소리 설정 섹션과 나머지 설정 구분선 */}
+          <hr className="border-t border-border/20 my-4" />
 
           <div className="flex items-center justify-between">
             <Label htmlFor="ignore-symbols">{t("common.ignoreSymbols")}</Label>
@@ -164,35 +135,6 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
               checked={settings.autoAdvance}
               onCheckedChange={(checked) => updateSettings({ autoAdvance: checked })}
             />
-          </div>
-
-          <div className="pt-4 border-t border-gray-100">
-            <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-              <Keyboard className="h-4 w-4" />
-              {t("common.keyboardShortcuts")}
-            </h3>
-            <div className="text-sm text-gray-500 space-y-1">
-              <div className="flex justify-between">
-                <span>{t("common.saveShortcut")}</span>
-                <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Ctrl + S</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("common.tableOfContents")}</span>
-                <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Ctrl + T</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("common.settingsShortcut")}</span>
-                <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Ctrl + ,</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("common.nextLine")}</span>
-                <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Tab</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("common.previousLine")}</span>
-                <kbd className="px-2 py-0.5 bg-gray-100 rounded text-xs">Shift + Tab</kbd>
-              </div>
-            </div>
           </div>
 
           <div className="flex justify-end">

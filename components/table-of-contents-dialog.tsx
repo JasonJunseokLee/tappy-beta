@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ChevronRight, ChevronDown, Search, AlertCircle, CheckCircle2, RefreshCw, FileText, Save } from "lucide-react"
+import { ChevronRight, ChevronDown, Search, AlertCircle, CheckCircle2, RefreshCw, FileText } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { useState, useEffect, useRef } from "react"
 import type { ChapterInfo } from "@/types/typing"
@@ -22,7 +22,6 @@ interface TableOfContentsDialogProps {
   completedChapters?: string[]
   onRecalculateToc?: () => void
   onFormatText?: () => void
-  onSaveSession?: () => void
   isRecalculatingToc?: boolean
 }
 
@@ -36,7 +35,6 @@ export default function TableOfContentsDialog({
   completedChapters = [],
   onRecalculateToc,
   onFormatText,
-  onSaveSession,
   isRecalculatingToc,
 }: TableOfContentsDialogProps) {
   const { t, language } = useLanguage()
@@ -291,13 +289,6 @@ export default function TableOfContentsDialog({
               <Button variant="outline" size="sm" onClick={onFormatText} className="text-xs px-3">
                 <FileText className="h-3.5 w-3.5 mr-1.5" />
                 {language === "ko" ? "텍스트 포맷팅" : "Text Formatting"}
-              </Button>
-            )}
-            
-            {onSaveSession && (
-              <Button variant="outline" size="sm" onClick={onSaveSession} className="text-xs px-3">
-                <Save className="h-3.5 w-3.5 mr-1.5" />
-                {language === "ko" ? "저장" : "Save"}
               </Button>
             )}
           </div>

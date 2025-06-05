@@ -203,10 +203,10 @@ export function findNextChapter(currentChapterId: string, chapters: ChapterInfo[
   if (!chapters || !chapters.length) return null
 
   try {
-    // 모든 챕터를 평탄화하고 위치 기준으로 정렬
+    // 평탄화 후 내용이 있는 챕터만 필터링 (중첩 순서 유지)
     const flatChapters = flattenTableOfContents(chapters)
-    flatChapters.sort((a, b) => a.position - b.position)
-
+      .filter((c) => c.content && c.content.trim().length > 0)
+     
     // 현재 챕터의 인덱스 찾기
     const currentIndex = flatChapters.findIndex((chapter) => chapter.id === currentChapterId)
 
@@ -229,9 +229,9 @@ export function findPrevChapter(currentChapterId: string, chapters: ChapterInfo[
   if (!chapters || !chapters.length) return null
 
   try {
-    // 모든 챕터를 평탄화하고 위치 기준으로 정렬
+    // 평탄화 후 내용이 있는 챕터만 필터링 (중첩 순서 유지)
     const flatChapters = flattenTableOfContents(chapters)
-    flatChapters.sort((a, b) => a.position - b.position)
+      .filter((c) => c.content && c.content.trim().length > 0)
 
     // 현재 챕터의 인덱스 찾기
     const currentIndex = flatChapters.findIndex((chapter) => chapter.id === currentChapterId)

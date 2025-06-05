@@ -28,6 +28,10 @@ export default function ChapterBasedTypingInterface({
   allChapters,
 }: ChapterBasedTypingInterfaceProps) {
   const { t } = useLanguage()
+  // 다음/이전 챕터 유무로 버튼 활성화 제어
+  const prevChapter = findPrevChapter(chapter.id, allChapters)
+  const nextChapter = findNextChapter(chapter.id, allChapters)
+
   // UI state
   const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false)
   const [fixedWidth, setFixedWidth] = useState<number>(() => Math.min(Math.max(window.innerWidth * 0.95, 1000), 1800)) // 기본 고정 너비 (initial)
@@ -158,7 +162,6 @@ export default function ChapterBasedTypingInterface({
 
   // 다음 챕터로 이동
   const navigateToNextChapter = useCallback(() => {
-    const nextChapter = findNextChapter(chapter.id, allChapters)
     if (nextChapter) {
       // 다음 챕터로 이동하기 전에 타이핑 상태 초기화
       typing.reset()
@@ -173,11 +176,10 @@ export default function ChapterBasedTypingInterface({
         description: t("common.alreadyLastChapter"),
       })
     }
-  }, [chapter.id, allChapters, onNavigateToChapter, typing])
+  }, [chapter.id, allChapters, onNavigateToChapter, typing, nextChapter])
 
   // 이전 챕터로 이동
   const navigateToPrevChapter = useCallback(() => {
-    const prevChapter = findPrevChapter(chapter.id, allChapters)
     if (prevChapter) {
       onNavigateToChapter(prevChapter.id)
     } else {
@@ -186,7 +188,7 @@ export default function ChapterBasedTypingInterface({
         description: t("common.alreadyFirstChapter"),
       })
     }
-  }, [chapter.id, allChapters, onNavigateToChapter])
+  }, [chapter.id, allChapters, onNavigateToChapter, prevChapter])
 
   // 키보드 단축키 - 변경된 부분
   useEffect(() => {
@@ -247,7 +249,8 @@ export default function ChapterBasedTypingInterface({
               variant="ghost"
               size="sm"
               onClick={navigateToPrevChapter}
-              className="text-muted-foreground hover:text-foreground"
+              disabled={!prevChapter}
+              className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="h-4 w-4 mr-1" /> {t("common.previousChapter")}
             </Button>
@@ -258,7 +261,8 @@ export default function ChapterBasedTypingInterface({
               variant="ghost"
               size="sm"
               onClick={navigateToNextChapter}
-              className="text-muted-foreground hover:text-foreground"
+              disabled={!nextChapter}
+              className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t("common.nextChapter")} <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
@@ -318,7 +322,8 @@ export default function ChapterBasedTypingInterface({
                     variant="outline"
                     size="sm"
                     onClick={navigateToPrevChapter}
-                    className="text-muted-foreground hover:text-foreground"
+                    disabled={!prevChapter}
+                    className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("practice.prevChapter")}
                   </Button>
@@ -326,7 +331,8 @@ export default function ChapterBasedTypingInterface({
                     variant="outline"
                     size="sm"
                     onClick={navigateToNextChapter}
-                    className="text-muted-foreground hover:text-foreground"
+                    disabled={!nextChapter}
+                    className="text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("practice.nextChapter")}
                   </Button>
@@ -487,18 +493,6 @@ export default function ChapterBasedTypingInterface({
                       </div>
                       <div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">{t("common.errors")}</span>
-                          <span className="text-xs font-medium">{typing.stats.errorCount}</span>
-                        </div>
-                        <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-red-500/60"
-                            style={{ width: `${Math.min(100, (typing.stats.errorCount / 50) * 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center">
                           <span className="text-xs text-muted-foreground">{t("common.corrections")}</span>
                           <span className="text-xs font-medium">{typing.stats.correctionCount}</span>
                         </div>
@@ -552,7 +546,8 @@ export default function ChapterBasedTypingInterface({
                     }, 100)
                   }}
                   variant="default"
-                  className="rounded-md transition-colors"
+                  disabled={!nextChapter}
+                  className="rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {t("practice.nextChapter")} <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
