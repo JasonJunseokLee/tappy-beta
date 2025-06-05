@@ -672,7 +672,6 @@ export default function PracticePage() {
         completedChapters={completedChapters}
         onRecalculateToc={recalculateTocPositions}
         onFormatText={formatText}
-        onSaveSession={saveSession}
         isRecalculatingToc={isRecalculatingToc}
       />
 
